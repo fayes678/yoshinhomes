@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+<script>(function(){var d=document.documentElement;try{var s=localStorage.getItem('arpi:fx'),l=s?JSON.parse(s):null;if(['low','medium','high','ultra'].indexOf(l)<0){var m=navigator.deviceMemory||4,c=navigator.hardwareConcurrency||4,n=navigator.connection;l=(matchMedia('(prefers-reduced-motion: reduce)').matches||(n&&n.saveData)||m<=2||c<=2)?'low':(m<=4||c<=4||innerWidth<760)?'medium':'high'}d.dataset.fx=l;if(l!=='low'&&!sessionStorage.getItem('yh:intro'))d.dataset.intro='1'}catch(e){d.dataset.fx='medium'}})()</script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Arpi Homes</title>
@@ -250,13 +251,14 @@ main { min-width: 0; display: flex; flex-direction: column; gap: 28px; }
 .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .field > span { font-size: .8rem; color: var(--ink-3); font-family: var(--f-mono); letter-spacing: .06em; }
 .field b { color: var(--ink); font-weight: 500; }
-input[type="text"], input[type="number"] {
+input[type="text"], input[type="number"], input[type="date"] {
   width: 100%; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--field);
   color: var(--ink); font: inherit; font-family: var(--f-mono); font-size: .92rem;
   transition: border-color .3s, box-shadow .3s;
 }
-input[type="text"]:focus, input[type="number"]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent); }
+input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent); }
 input[type="range"] { width: 100%; accent-color: var(--accent); }
+input[type="date"] { color-scheme: dark; }
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
 .form-grid .wide { grid-column: 1 / -1; }
 
@@ -279,6 +281,27 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 
 .meter { height: 6px; border-radius: 999px; background: rgba(255, 255, 255, .08); overflow: hidden; }
 .meter span { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, #8d8d99, var(--accent)); transition: width .5s cubic-bezier(.2, .7, .2, 1); }
+
+/* ---------- Password generator (multi-mode) ---------- */
+#p-pass [hidden] { display: none !important; }
+.pw-list { display: grid; gap: 8px; }
+.pw-item {
+  display: flex; justify-content: space-between; align-items: center; gap: 14px; width: 100%; text-align: left;
+  padding: 10px 14px; border-radius: 14px; border: 1px solid var(--line); background: rgba(0, 0, 0, .28);
+  color: var(--ink-2); font-family: var(--f-mono); font-size: .86rem; cursor: pointer;
+  transition: color .3s, border-color .3s, background .3s;
+}
+.pw-item span { overflow-wrap: anywhere; min-width: 0; }
+.pw-item small { color: var(--ink-3); white-space: nowrap; font-size: .72rem; }
+.pw-item:hover { color: var(--ink); border-color: rgba(255, 255, 255, .28); }
+.pw-item.hot { color: var(--ink); border-color: color-mix(in srgb, var(--accent) 45%, transparent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.die { display: inline-block; }
+.rolling .die { animation: dieroll .6s cubic-bezier(.2, .7, .2, 1); }
+@keyframes dieroll { to { transform: rotate(540deg) scale(1.2); } }
+.codebox.pass output.flash { animation: pwflash .45s ease-out; }
+@keyframes pwflash { from { opacity: .15; filter: blur(6px); transform: translateY(4px); } }
+@media (prefers-reduced-motion: reduce) { .rolling .die, .codebox.pass output.flash { animation: none; } }
+#p-pass code { font-family: var(--f-mono); color: var(--ink-2); }
 
 .result { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
 .result > div { padding: 18px; border-radius: 18px; background: rgba(0, 0, 0, .28); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px; }
@@ -491,9 +514,118 @@ textarea:focus, select:focus { outline: none; border-color: var(--accent); box-s
 .don-row p { font-size: .9rem; overflow-wrap: anywhere; }
 .don-row small { color: var(--ink-3); font-size: .75rem; font-family: var(--f-mono); }
 .don-amt { font-family: var(--f-mono); font-weight: 600; white-space: nowrap; color: var(--accent); }
+
+/* ---------- Subnet calculator ---------- */
+.sn-prefix { display: flex; flex-direction: column; gap: 14px; }
+.sn-need { display: grid; grid-template-columns: minmax(160px, 220px) minmax(0, 1fr); gap: 14px; align-items: end; }
+.sn-need .note { padding-bottom: 12px; }
+.sn-need .note b { color: var(--ink); }
+.sn-out { display: flex; flex-direction: column; gap: 14px; }
+.sn-box { padding: 18px; border-radius: 18px; background: rgba(0, 0, 0, .26); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.sn-box .kv > div { background: rgba(255, 255, 255, .03); }
+.sn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.sn-big { font-family: var(--f-mono); font-size: clamp(1.4rem, 3.4vw, 2rem); color: var(--ink); font-variant-numeric: tabular-nums; width: fit-content; max-width: 100%; overflow-wrap: anywhere; transition: color .3s; }
+.kvc[data-v], .kvc[data-load] { cursor: pointer; }
+.kv > .kvc[data-v]:hover, .code.kvc:hover, .srow.kvc:hover { border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+.sn-big[data-v]:hover { color: var(--accent); }
+.chip.kvc[data-v]:hover { color: var(--ink); border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+button.chip { cursor: pointer; transition: color .3s, border-color .3s, background .3s; }
+button.chip:hover { color: var(--ink); border-color: rgba(255, 255, 255, .28); }
+.bits { display: flex; flex-wrap: wrap; gap: 8px 12px; }
+.oct { display: inline-flex; gap: 2px; }
+.bit { width: 21px; height: 30px; display: grid; place-items: center; border-radius: 7px; border: 1px solid var(--line); background: rgba(255, 255, 255, .035); font-family: var(--f-mono); font-size: .8rem; color: var(--ink-3); user-select: none; transition: transform .25s, background .25s, border-color .25s; }
+.bit.v1 { color: var(--ink); }
+.bit.m1 { background: var(--accent); color: #0b0b0d; border-color: transparent; }
+.bit.w1 { background: var(--accent-2); color: #0b0b0d; border-color: transparent; }
+.bit.rn.v1 { border-color: color-mix(in srgb, var(--accent) 70%, transparent); }
+.bit.rh.v1 { border-color: color-mix(in srgb, var(--accent-2) 70%, transparent); }
+.bit.edge { margin-left: 6px; }
+.bit[data-bit] { cursor: pointer; }
+.bit[data-bit]:hover { transform: translateY(-3px); border-color: rgba(255, 255, 255, .45); }
+.code { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); background: rgba(0, 0, 0, .28); min-width: 0; }
+.code small { font-family: var(--f-mono); font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+.code code { font-family: var(--f-mono); font-size: .84rem; color: #dcdce4; overflow-wrap: anywhere; }
+.srow { display: grid; grid-template-columns: minmax(150px, 1.1fr) minmax(0, 2fr) auto; gap: 12px; align-items: center; padding: 10px 14px; border-radius: 14px; border: 1px solid var(--line); background: rgba(255, 255, 255, .03); font-size: .88rem; }
+.srow b { font-family: var(--f-mono); font-weight: 500; color: var(--ink); }
+.srow span, .srow em { font-family: var(--f-mono); font-size: .8rem; color: var(--ink-2); font-style: normal; overflow-wrap: anywhere; }
+.srow em { color: var(--accent); white-space: nowrap; }
+@media (max-width: 600px) {
+  .sn-need { grid-template-columns: 1fr; }
+  .sn-need .note { padding-bottom: 0; }
+  .srow { grid-template-columns: 1fr; gap: 2px; }
+  .bit { width: 19px; height: 28px; }
+}
+
+/* ---------- Tambahan: network list + RouterOS ---------- */
+.field[hidden] { display: none; }
+.err, #ros-warn, #ros-sum { white-space: pre-line; }
+#ros-sum { font-family: var(--f-mono); color: var(--ink-2); }
+.srow.cur { border-color: color-mix(in srgb, var(--accent) 60%, transparent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.sn-box .lead { font-size: 1rem; }
+.sn-box .lead b { color: var(--ink); font-weight: 600; }
+input[type="password"] { width: 100%; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--field); color: var(--ink); font: inherit; font-family: var(--f-mono); font-size: .92rem; transition: border-color .3s, box-shadow .3s; }
+input[type="password"]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent); }
+
+/* ---------- Akun, admin, PSU pintar ---------- */
+input[type="email"], input[type="password"] { width: 100%; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--field); color: var(--ink); font: inherit; font-family: var(--f-mono); font-size: .92rem; transition: border-color .3s, box-shadow .3s; }
+input[type="email"]:focus, input[type="password"]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent); }
+#p-psu .chips, #p-psu .checks, #p-psu .meter, #p-psu .row, #psu-saved, #psu-help, #akun-body > *, #adm-main > * { margin-top: 14px; }
+#psu-tips { padding-left: 1.2em; display: grid; gap: 6px; }
+#psu-bar.warn { background: linear-gradient(90deg, #8d8d99, #f0c2a5); }
+#psu-bar.bad { background: #e58a8a; }
+#adm-body .don-row, #akun-body .don-row, #psu-saved .don-row { margin-top: 10px; gap: 12px; flex-wrap: wrap; }
+#adm-body .don-row select { width: auto; }
+.role-badge { font-family: var(--f-mono); font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); }
+.role-badge.admin { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+
+/* ---------- Level efek: low / medium / high / ultra ---------- */
+html[data-fx="low"] .orb, html[data-fx="low"] .grain, html[data-fx="low"] .glass::before, html[data-fx="low"] .glass::after { display: none; }
+html[data-fx="low"] .bg { background: #0b0b0e; }
+html[data-fx="low"] .glass { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(22, 22, 27, .93); }
+html[data-fx="low"] dialog::backdrop { -webkit-backdrop-filter: none; backdrop-filter: none; }
+html[data-fx="low"] *, html[data-fx="low"] *::before, html[data-fx="low"] *::after { animation: none !important; transition-duration: .01ms !important; }
+html[data-fx="medium"] .orb { filter: blur(48px); animation: none; }
+html[data-fx="medium"] .grain { display: none; }
+html[data-fx="medium"] .glass { -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+html[data-fx="medium"] h3, html[data-fx="medium"] .linkrow strong, html[data-fx="medium"] .lead em, html[data-fx="medium"] .quote, html[data-fx="medium"] blockquote, html[data-fx="medium"] .tag, html[data-fx="medium"] .time, html[data-fx="medium"] .eyebrow, html[data-fx="medium"] .num, html[data-fx="medium"] .pillar .emo { animation: none; filter: none; }
+html[data-fx="medium"] h1, html[data-fx="medium"] h2, html[data-fx="medium"] .name, html[data-fx="medium"] .brand-text strong { animation: run-shine 9s linear infinite; }
+html[data-fx="medium"] .btn.primary::after { animation: none; }
+html[data-fx="high"] .orb { filter: blur(70px); }
+html[data-fx="high"] .glass { -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%); }
+html[data-fx="ultra"] .glass { -webkit-backdrop-filter: blur(30px) saturate(200%); backdrop-filter: blur(30px) saturate(200%); transition: box-shadow .5s, transform .5s; }
+html[data-fx="ultra"] .glass:hover { box-shadow: 0 0 46px -10px var(--accent); }
+html[data-fx="ultra"] .orb { opacity: .7; }
+#fx-stars { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+
+/* ---------- Intro ---------- */
+html[data-intro="1"] { overflow: hidden; }
+#intro { position: fixed; inset: 0; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; gap: clamp(18px, 3.5vh, 30px); cursor: pointer; touch-action: manipulation; perspective: 900px; }
+html[data-intro="1"] #intro { display: flex; }
+#intro .ibg { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 42%, #2a1458 0%, #0b0620 55%, #030208 100%); }
+#intro-fx { position: absolute; inset: 0; width: 100%; height: 100%; display: none; }
+html[data-fx="ultra"] #intro-fx { display: block; }
+.istage { position: relative; width: min(58vmin, 420px); aspect-ratio: 1; transition: transform .25s ease-out; transform-style: preserve-3d; will-change: transform; }
+html[data-fx="ultra"] .istage { width: min(66vmin, 560px); }
+.iglow { position: absolute; inset: -22%; border-radius: 50%; background: radial-gradient(circle, rgba(150, 100, 255, .45), rgba(255, 180, 110, .12) 45%, transparent 68%); display: none; }
+html[data-fx="high"] .iglow, html[data-fx="ultra"] .iglow { display: block; animation: ipulse 3s ease-in-out infinite; }
+@keyframes ipulse { 50% { transform: scale(1.12); opacity: .75; } }
+#intro-logo { position: relative; width: 100%; height: 100%; border-radius: 14%; object-fit: cover; opacity: 0; box-shadow: 0 0 50px 4px rgba(140, 90, 255, .35), 0 0 0 1px rgba(255, 255, 255, .08); }
+html[data-fx="high"] #intro-logo { box-shadow: 0 0 90px 12px rgba(150, 100, 255, .5), 0 0 0 1px rgba(255, 255, 255, .1); }
+html[data-fx="ultra"] #intro-logo { box-shadow: 0 0 130px 26px rgba(160, 110, 255, .6), 0 0 44px 4px rgba(255, 190, 120, .4), 0 0 0 1px rgba(255, 255, 255, .12); }
+.intro-credit { position: relative; margin: 0; font-family: var(--f-mono); font-size: clamp(.7rem, 2.6vw, .9rem); letter-spacing: .16em; text-transform: uppercase; color: #d9c9ff; opacity: 0; text-align: center; text-shadow: 0 0 14px rgba(160, 110, 255, .8); }
+.intro-credit b { color: #ffd9a6; font-weight: 500; }
+.intro-hint { position: absolute; bottom: calc(5vh + env(safe-area-inset-bottom, 0px)); margin: 0; font-size: .75rem; color: #a493d0; opacity: 0; letter-spacing: .1em; }
+.brand img.land { animation: land .9s ease-out; }
+@keyframes land { 0% { box-shadow: 0 0 0 0 rgba(180, 140, 255, .9); } 100% { box-shadow: 0 0 0 24px rgba(180, 140, 255, 0); } }
 </style>
 </head>
 <body>
+<div id="intro" aria-hidden="true">
+  <div class="ibg"></div><canvas id="intro-fx"></canvas>
+  <div class="istage"><div class="iglow"></div><img id="intro-logo" src="assets/intro-logo.webp" alt="" width="768" height="768" decoding="async" fetchpriority="high"></div>
+  <p class="intro-credit">Created by <b>Yoshin Ace</b> x <b>Bimo Arya</b></p>
+  <p class="intro-hint">Ketuk untuk masuk</p>
+</div>
 
   <!-- Ikon (sprite). Tinggal pakai: <svg class="ic"><use href="#i-nama"/></svg> -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -538,6 +670,8 @@ textarea:focus, select:focus { outline: none; border-color: var(--accent); box-s
         <a class="nav-btn" href="#support" data-tab="support" data-silent><svg class="ic"><use href="#i-heart"/></svg><span>Support</span></a>
         <a class="nav-btn" href="#donasi" data-tab="donasi" data-silent><svg class="ic"><use href="#i-gift"/></svg><span>Donasi</span></a>
         <a class="nav-btn" href="#lainnya" data-tab="lainnya" data-silent><svg class="ic"><use href="#i-grid"/></svg><span>Lainnya</span></a>
+        <a class="nav-btn" href="#akun" data-tab="akun" data-silent><svg class="ic"><use href="#i-users"/></svg><span id="nav-akun-t">Masuk</span></a>
+        <a class="nav-btn" href="#admin" data-tab="admin" id="nav-admin" data-silent hidden><svg class="ic"><use href="#i-grid"/></svg><span>Admin</span></a>
       </nav>
 
       <button class="nav-btn sound-btn" id="sound-btn" type="button" aria-pressed="true" data-silent title="Sound on/off (M)">
@@ -570,7 +704,7 @@ textarea:focus, select:focus { outline: none; border-color: var(--accent); box-s
         </div>
 
         <div class="grid tiles">
-          <a class="glass card tile" href="#tools" data-silent><svg class="ic"><use href="#i-tools"/></svg><h3>Tools</h3><p>Subnet calculator, RouterOS generator, PSU estimator, password generator.</p></a>
+          <a class="glass card tile" href="#tools" data-silent><svg class="ic"><use href="#i-tools"/></svg><h3>Tools</h3><p>Subnet calculator, RouterOS generator, PSU estimator, password generator multi-mode.</p></a>
           <a class="glass card tile" href="#donasi" data-silent><svg class="ic"><use href="#i-gift"/></svg><h3>Donasi</h3><p>Dukung lewat Saweria atau Sociabuzz.</p></a>
           <a class="glass card tile" href="#music" data-silent><svg class="ic"><use href="#i-music"/></svg><h3>Music Player</h3><p>Playlist Studio Music dari Arpy Studio.</p></a>
           <a class="glass card tile" href="#community" data-silent><svg class="ic"><use href="#i-users"/></svg><h3>About Community</h3><p>Arpy Studio: party, chat, voice, dan gaming bareng di Discord.</p></a>
@@ -609,66 +743,191 @@ textarea:focus, select:focus { outline: none; border-color: var(--accent); box-s
           <!-- Subnet calculator -->
           <div class="tabpanel" role="tabpanel" id="p-subnet" aria-labelledby="t-subnet">
             <label class="field" for="sn-in">
-              <span>IP / CIDR</span>
+              <span>IP/CIDR · IP + netmask · IP + wildcard · atau netmask / wildcard saja</span>
               <input id="sn-in" type="text" value="192.168.10.37/26" spellcheck="false" autocomplete="off" inputmode="text">
             </label>
-            <p class="err" id="sn-err" hidden>Format belum benar. Contoh: 192.168.10.37/26</p>
-            <dl class="kv" id="sn-out"></dl>
+            <div class="chips" id="sn-presets" role="group" aria-label="Contoh siap pakai"></div>
+            <div class="chips"><span class="chip hot" id="sn-fmt" hidden></span></div>
+            <p class="err" id="sn-err" role="alert" hidden></p>
+
+            <div class="sn-prefix">
+              <label class="field" for="sn-pref"><span>Prefix: <b id="sn-pref-v">/26</b></span><input id="sn-pref" type="range" min="0" max="32" value="26"></label>
+              <div class="chips" id="sn-quick" role="group" aria-label="Prefix umum"></div>
+              <div class="sn-need">
+                <label class="field" for="sn-need"><span>Butuh berapa host?</span><input id="sn-need" type="number" min="1" max="4294967294" placeholder="mis. 50" inputmode="numeric"></label>
+                <p class="note" id="sn-need-r" aria-live="polite"></p>
+              </div>
+            </div>
+
+            <div class="sn-out" id="sn-out"></div>
+
+            <section class="sn-box" id="sn-quiz">
+              <p class="eyebrow">Latihan soal</p>
+              <p id="qz-q"><strong></strong></p>
+              <div class="row"><input id="qz-a" type="text" placeholder="Ketik jawabanmu di sini" autocomplete="off" spellcheck="false" aria-label="Kotak jawaban"><button class="btn small primary" id="qz-chk" type="button">Cek jawaban</button></div>
+              <div class="row"><button class="btn small" id="qz-auto" type="button">Jawab otomatis</button><button class="btn small" id="qz-new" type="button">Soal baru</button><button class="btn small" id="qz-use" type="button">Buka di kalkulator</button></div>
+              <label class="check" for="qz-autoon"><input id="qz-autoon" type="checkbox"><span>Mode otomatis: kotak jawaban langsung terisi jawaban benar + penjelasan</span></label>
+              <p class="note" id="qz-r" aria-live="polite"></p>
+              <p class="note" id="qz-s">Skor: 0 / 0</p>
+            </section>
+
+            <div class="faq" id="sn-help">
+              <details class="glass"><summary>Kenapa jumlah host dikurangi 2?</summary><p>Dari semua alamat dalam satu subnet, alamat pertama dipakai sebagai alamat network (nama subnet itu sendiri) dan alamat terakhir sebagai broadcast (alamat untuk menyapa semua host). Keduanya tidak boleh dipasang ke perangkat. Contoh /24: 256 alamat, 254 untuk host.</p></details>
+              <details class="glass"><summary>Apa beda netmask dan wildcard?</summary><p>Wildcard adalah kebalikan netmask: bit 0 artinya harus sama, bit 1 artinya boleh beda. Netmask dipakai di konfigurasi IP biasa, wildcard dipakai di ACL Cisco dan OSPF. Rumus cepat: wildcard = 255.255.255.255 dikurangi netmask.</p></details>
+              <details class="glass"><summary>Kapan pakai /30, /31, dan /32?</summary><p>/30 (2 host) lazim untuk link antar router. /31 (2 alamat, tanpa network dan broadcast) dipakai untuk link point-to-point modern. /32 satu alamat saja, dipakai untuk loopback atau rute host.</p></details>
+              <details class="glass"><summary>Bagaimana memilih prefix dari jumlah host?</summary><p>Cari pangkat 2 terkecil yang lebih besar atau sama dengan host + 2. Butuh 50 host: 50 + 2 = 52, pangkat 2 terdekat 64 = 2^6, jadi bit host 6 dan prefix = 32 − 6 = /26 (62 host).</p></details>
+              <details class="glass"><summary>Rentang alamat private apa saja?</summary><p>10.0.0.0/8, 172.16.0.0 sampai 172.31.255.255 (/12), dan 192.168.0.0/16. Alamat ini tidak diroute di internet, jadi butuh NAT untuk keluar. 100.64.0.0/10 adalah CGNAT milik ISP.</p></details>
+              <details class="glass"><summary>Kelas A/B/C masih dipakai?</summary><p>Kelas (A /8, B /16, C /24) adalah sistem lama. Sekarang yang dipakai CIDR, prefix bebas dari /0 sampai /32. Kelas hanya dipakai sebagai tebakan prefix kalau kamu mengetik IP tanpa prefix.</p></details>
+            </div>
           </div>
 
           <!-- RouterOS generator -->
           <div class="tabpanel" role="tabpanel" id="p-ros" aria-labelledby="t-ros" hidden>
             <div class="form-grid">
-              <label class="field" for="ros-wan"><span>Interface WAN</span><input id="ros-wan" type="text" value="ether1" spellcheck="false"></label>
+              <label class="field" for="ros-wantype"><span>Jenis koneksi WAN</span>
+                <select id="ros-wantype"><option value="dhcp">DHCP (dari modem / ISP)</option><option value="static">IP statis</option><option value="pppoe">PPPoE</option></select>
+              </label>
+              <label class="field" for="ros-wan"><span>Interface WAN (ke internet)</span><input id="ros-wan" type="text" value="ether1" spellcheck="false"></label>
               <label class="field" for="ros-lan"><span>Interface LAN</span><input id="ros-lan" type="text" value="ether2" spellcheck="false"></label>
-              <label class="field" for="ros-addr"><span>Alamat LAN (IP/CIDR)</span><input id="ros-addr" type="text" value="192.168.88.1/24" spellcheck="false"></label>
-              <label class="field" for="ros-dns"><span>DNS (pisah koma)</span><input id="ros-dns" type="text" value="8.8.8.8,1.1.1.1" spellcheck="false"></label>
+              <label class="field" for="ros-addr"><span>Alamat router di LAN (IP/CIDR)</span><input id="ros-addr" type="text" value="192.168.88.1/24" spellcheck="false"></label>
+              <label class="field" data-wan="static" for="ros-wanaddr" hidden><span>Alamat WAN (IP/CIDR)</span><input id="ros-wanaddr" type="text" placeholder="203.0.113.10/29" spellcheck="false"></label>
+              <label class="field" data-wan="static" for="ros-wangw" hidden><span>Gateway ISP</span><input id="ros-wangw" type="text" placeholder="203.0.113.9" spellcheck="false"></label>
+              <label class="field" data-wan="pppoe" for="ros-pppu" hidden><span>Username PPPoE</span><input id="ros-pppu" type="text" autocomplete="off" spellcheck="false"></label>
+              <label class="field" data-wan="pppoe" for="ros-pppp" hidden><span>Password PPPoE</span><input id="ros-pppp" type="password" autocomplete="new-password"></label>
+              <label class="field" for="ros-dns"><span>DNS upstream (pisah koma)</span><input id="ros-dns" type="text" value="8.8.8.8,1.1.1.1" spellcheck="false"></label>
               <label class="field wide" for="ros-pool"><span>Pool DHCP (kosongkan untuk otomatis)</span><input id="ros-pool" type="text" placeholder="192.168.88.10-192.168.88.254" spellcheck="false"></label>
             </div>
             <div class="checks">
-              <label class="check" for="ros-dhcpc"><input id="ros-dhcpc" type="checkbox" checked><span>DHCP client di WAN</span></label>
-              <label class="check" for="ros-nat"><input id="ros-nat" type="checkbox" checked><span>NAT masquerade</span></label>
+              <label class="check" for="ros-nat"><input id="ros-nat" type="checkbox" checked><span>NAT masquerade (LAN ke internet)</span></label>
+              <label class="check" for="ros-dhcps"><input id="ros-dhcps" type="checkbox" checked><span>DHCP server di LAN</span></label>
+              <label class="check" for="ros-dnsself"><input id="ros-dnsself" type="checkbox" checked><span>Router jadi DNS cache untuk LAN</span></label>
+              <label class="check" for="ros-fw"><input id="ros-fw" type="checkbox" checked><span>Firewall dasar</span></label>
             </div>
-            <p class="err" id="ros-err" hidden>Alamat LAN belum valid. Contoh: 192.168.88.1/24</p>
+            <p class="err" id="ros-err" role="alert" hidden></p>
+            <p class="note" id="ros-sum" hidden></p>
             <div class="codebox">
               <button class="btn small" type="button" data-copy="#ros-out"><svg class="ic sm"><use href="#i-copy"/></svg> Salin</button>
               <pre id="ros-out" tabindex="0"></pre>
             </div>
-            <p class="note">Cek dulu sebelum ditempel ke terminal WinBox. Sesuaikan nama interface dengan perangkatmu.</p>
+            <p class="note" id="ros-warn" hidden></p>
+            <p class="note">Dibuat untuk router berkonfigurasi kosong (reset no-defaults). Kalau routermu masih membawa konfigurasi bawaan, interface list atau rule yang sama bisa bentrok, jadi cek dulu sebelum ditempel ke terminal WinBox.</p>
           </div>
 
           <!-- PSU estimator -->
           <div class="tabpanel" role="tabpanel" id="p-psu" aria-labelledby="t-psu" hidden>
+            <div class="chips" id="psu-use" role="group" aria-label="Kebutuhan pemakaian">
+              <button class="chip hot" type="button" data-u="office">Kantor / harian</button>
+              <button class="chip" type="button" data-u="gaming">Gaming</button>
+              <button class="chip" type="button" data-u="kreator">Kreator / render</button>
+            </div>
             <div class="form-grid">
+              <label class="field" for="psu-cpus"><span>Pilih CPU</span><select id="psu-cpus"><option value="">Isi manual</option></select></label>
               <label class="field" for="psu-cpu"><span>CPU (watt TDP)</span><input id="psu-cpu" type="number" min="0" max="500" value="65"></label>
-              <label class="field" for="psu-gpu"><span>GPU (watt TDP)</span><input id="psu-gpu" type="number" min="0" max="800" value="120"></label>
+              <label class="field" for="psu-gpus"><span>Pilih GPU</span><select id="psu-gpus"><option value="">Isi manual</option></select></label>
+              <label class="field" for="psu-gpu"><span>GPU (watt TBP)</span><input id="psu-gpu" type="number" min="0" max="800" value="120"></label>
               <label class="field" for="psu-ram"><span>Jumlah RAM</span><input id="psu-ram" type="number" min="0" max="8" value="2"></label>
               <label class="field" for="psu-drv"><span>Jumlah SSD / HDD</span><input id="psu-drv" type="number" min="0" max="12" value="2"></label>
               <label class="field" for="psu-fan"><span>Jumlah fan</span><input id="psu-fan" type="number" min="0" max="16" value="3"></label>
+              <label class="field" for="psu-hrs"><span>Jam pakai per hari</span><input id="psu-hrs" type="number" min="0" max="24" value="8"></label>
+              <label class="field" for="psu-tar"><span>Tarif listrik (Rp/kWh)</span><input id="psu-tar" type="number" min="0" value="1445"></label>
             </div>
+            <div class="checks"><label class="check" for="psu-oc"><input id="psu-oc" type="checkbox"><span>Overclock / boost agresif (+30% CPU, +15% GPU)</span></label></div>
             <div class="result">
-              <div><span class="label">Estimasi beban</span><strong id="psu-load">0 W</strong></div>
+              <div><span class="label">Beban puncak</span><strong id="psu-load">0 W</strong></div>
               <div><span class="label">PSU disarankan</span><strong id="psu-rec">0 W</strong></div>
+              <div><span class="label">Sertifikasi minimal</span><strong id="psu-eff">-</strong></div>
+              <div><span class="label">Listrik / bulan</span><strong id="psu-cost">-</strong></div>
             </div>
-            <p class="note">Estimasi kasar: beban dikali 1,4 untuk ruang napas, dibulatkan ke 50 W terdekat. Cek spesifikasi resmi komponenmu untuk angka pasti.</p>
+            <div class="meter" aria-hidden="true"><span id="psu-bar"></span></div>
+            <p class="note" id="psu-verdict" aria-live="polite"></p>
+            <ul class="note" id="psu-tips"></ul>
+            <div class="row"><input id="psu-name" type="text" maxlength="60" placeholder="Nama build, mis. PC gaming kamar"><button class="btn small" id="psu-save" type="button">Simpan build</button></div>
+            <div id="psu-saved"></div>
+            <div class="faq" id="psu-help">
+              <details class="glass"><summary>Cara hitungnya</summary><p>Beban puncak = CPU (TDP dikali 1,15; 1,3 kalau overclock) + GPU (TBP; dikali 1,15 kalau overclock) + 40 W motherboard + 5 W per keping RAM + 8 W per drive + 3 W per fan. CPU modern sering menarik daya di atas TDP saat boost, itu alasan pengali 1,15.</p></details>
+              <details class="glass"><summary>Kenapa PSU tidak dibuat pas-pasan?</summary><p>PSU paling efisien dan paling adem di sekitar 40 sampai 70% bebannya, dan komponennya menua sehingga kapasitas efektif turun. Rekomendasi di sini membuat beban puncak sekitar 75% kapasitas atau lebih longgar, lalu dibulatkan ke ukuran yang ada di pasaran.</p></details>
+              <details class="glass"><summary>Apa itu lonjakan (transient) GPU?</summary><p>GPU kelas atas bisa melonjak sesaat jauh di atas TBP-nya dalam hitungan milidetik. PSU murah bisa mati mendadak karena proteksi (OCP). Karena itu perhitungan juga memastikan ada cadangan minimal 40% dari TBP GPU di atas beban puncak.</p></details>
+              <details class="glass"><summary>Arti 80 Plus Bronze, Gold, Platinum</summary><p>Itu rating efisiensi konversi AC ke DC. Makin tinggi, makin sedikit daya terbuang jadi panas dan makin hemat listrik, biasanya dengan kualitas komponen internal yang lebih baik. Untuk PC di bawah 400 W Bronze sudah cukup, 400 sampai 800 W pilih Gold, di atas itu Platinum. Merek dan reviu tetap lebih penting daripada sekadar stiker.</p></details>
+              <details class="glass"><summary>Biaya listrik dihitung dari apa?</summary><p>Rata-rata daya = beban puncak dikali faktor pemakaian (kantor 35%, gaming 70%, kreator 85%), dikali jam per hari, 30 hari, dan tarif. Isi tarif sesuai tagihanmu. Angkanya perkiraan, bukan hasil pengukuran.</p></details>
+              <details class="glass"><summary>Tentang katalog dan simpan build</summary><p>Daftar CPU dan GPU berisi TDP/TBP resmi (perkiraan) dan dikelola admin. Masuk ke akunmu untuk menyimpan sampai 20 build dan memuatnya lagi kapan saja.</p></details>
+            </div>
           </div>
 
           <!-- Password generator -->
           <div class="tabpanel" role="tabpanel" id="p-pass" aria-labelledby="t-pass" hidden>
+            <div class="chips" id="pw-modes" role="group" aria-label="Jenis password">
+              <button class="chip hot" type="button" data-mode="acak" aria-pressed="true">Acak</button>
+              <button class="chip" type="button" data-mode="huruf" aria-pressed="false">Huruf</button>
+              <button class="chip" type="button" data-mode="angka" aria-pressed="false">Angka</button>
+              <button class="chip" type="button" data-mode="dadu" aria-pressed="false">Dadu</button>
+              <button class="chip" type="button" data-mode="absurd" aria-pressed="false">Absurd</button>
+              <button class="chip" type="button" data-mode="tgl" aria-pressed="false">Tgl lahir</button>
+              <button class="chip" type="button" data-mode="custom" aria-pressed="false">Kustom</button>
+              <button class="chip" type="button" data-mode="kejutan" aria-pressed="false">Kejutan</button>
+            </div>
+            <p class="note" id="pw-desc"></p>
+
             <div class="codebox pass">
               <button class="btn small" type="button" data-copy="#pw-out"><svg class="ic sm"><use href="#i-copy"/></svg> Salin</button>
               <output id="pw-out" tabindex="0"></output>
             </div>
             <div class="meter" aria-hidden="true"><span id="pw-bar"></span></div>
             <p class="note" id="pw-info"></p>
-            <label class="field" for="pw-len"><span>Panjang: <b id="pw-len-v">16</b></span><input id="pw-len" type="range" min="8" max="48" value="16"></label>
-            <div class="checks">
-              <label class="check" for="pw-lower"><input id="pw-lower" type="checkbox" checked><span>a–z</span></label>
-              <label class="check" for="pw-upper"><input id="pw-upper" type="checkbox" checked><span>A–Z</span></label>
-              <label class="check" for="pw-digit"><input id="pw-digit" type="checkbox" checked><span>0–9</span></label>
-              <label class="check" for="pw-sym"><input id="pw-sym" type="checkbox" checked><span>Simbol</span></label>
+            <p class="note" id="pw-hint" hidden></p>
+
+            <div class="form-grid">
+              <label class="field" for="pw-len" data-m="acak huruf angka tgl"><span>Panjang: <b id="pw-len-v">16</b></span><input id="pw-len" type="range" min="4" max="64" value="16"></label>
+              <label class="field" for="pw-words" data-m="dadu" hidden><span>Jumlah kata: <b id="pw-words-v">6</b></span><input id="pw-words" type="range" min="3" max="12" value="6"></label>
+              <label class="field" for="pw-abs" data-m="absurd" hidden><span>Level absurd: <b id="pw-abs-v">Gila</b></span><input id="pw-abs" type="range" min="1" max="5" value="4"></label>
+              <label class="field" for="pw-sep" data-m="dadu" hidden><span>Pemisah kata</span>
+                <select id="pw-sep"><option value="-">Strip ( - )</option><option value=".">Titik ( . )</option><option value="_">Garis bawah ( _ )</option><option value=" ">Spasi</option><option value="">Tanpa pemisah</option><option value="rand">Simbol acak</option></select>
+              </label>
+              <label class="field" for="pw-cap" data-m="dadu" hidden><span>Huruf besar</span>
+                <select id="pw-cap"><option value="first">Awal tiap kata</option><option value="mix">Acak per huruf</option><option value="lower">Kecil semua</option><option value="upper">BESAR SEMUA</option></select>
+              </label>
+              <label class="field" for="pw-grp" data-m="huruf angka" hidden><span>Kelompokkan</span>
+                <select id="pw-grp"><option value="0">Tanpa kelompok</option><option value="3">Per 3 karakter</option><option value="4">Per 4 karakter</option><option value="5">Per 5 karakter</option></select>
+              </label>
+              <label class="field" for="pw-dob" data-m="tgl" hidden><span>Tanggal lahir</span><input id="pw-dob" type="date" autocomplete="off"></label>
+              <label class="field" for="pw-name" data-m="tgl" hidden><span>Nama / panggilan (opsional)</span><input id="pw-name" type="text" maxlength="20" autocomplete="off" spellcheck="false" placeholder="contoh: Bimo"></label>
+              <label class="field wide" for="pw-extra" data-m="acak custom"><span>Karakter kustom (opsional)</span><input id="pw-extra" type="text" maxlength="64" autocomplete="off" spellcheck="false" placeholder="contoh: ★♥€ atau hanya xyz123"></label>
+              <label class="field wide" for="pw-tpl" data-m="custom" hidden><span>Pola</span><input id="pw-tpl" type="text" maxlength="120" autocomplete="off" spellcheck="false" value="{Adj}-{Noun}-{d3}{s}"></label>
+              <label class="field" for="pw-count"><span>Jumlah hasil: <b id="pw-count-v">1</b></span><input id="pw-count" type="range" min="1" max="20" value="1"></label>
             </div>
-            <button class="btn" id="pw-gen" type="button">Generate lagi</button>
+
+            <div class="chips" id="pw-toks" data-m="custom" hidden aria-label="Sisipkan token ke pola">
+              <button class="chip" type="button" data-tok="{l}" title="huruf kecil">{l}</button>
+              <button class="chip" type="button" data-tok="{u}" title="huruf besar">{u}</button>
+              <button class="chip" type="button" data-tok="{d}" title="angka">{d}</button>
+              <button class="chip" type="button" data-tok="{s}" title="simbol">{s}</button>
+              <button class="chip" type="button" data-tok="{x}" title="karakter apa saja">{x}</button>
+              <button class="chip" type="button" data-tok="{c}" title="dari kolom karakter kustom">{c}</button>
+              <button class="chip" type="button" data-tok="{adj}" title="kata sifat absurd">{adj}</button>
+              <button class="chip" type="button" data-tok="{Noun}" title="benda / hewan absurd, awalan kapital">{Noun}</button>
+              <button class="chip" type="button" data-tok="{kata}" title="kata umum">{kata}</button>
+            </div>
+            <p class="note" data-m="custom" hidden>Tambahkan angka untuk mengulang: <code>{d4}</code> = 4 angka. Tulis dengan huruf awal besar (<code>{Adj}</code>) untuk kapital, atau semua besar (<code>{NOUN}</code>). Teks di luar kurung kurawal dipakai apa adanya.</p>
+            <p class="note" data-m="tgl" hidden>Tanggal lahir dan nama hanya diproses di browser ini dan tidak disimpan.</p>
+
+            <div class="checks">
+              <label class="check" for="pw-lower" data-m="acak huruf"><input id="pw-lower" type="checkbox" checked><span>a–z</span></label>
+              <label class="check" for="pw-upper" data-m="acak huruf"><input id="pw-upper" type="checkbox" checked><span>A–Z</span></label>
+              <label class="check" for="pw-digit" data-m="acak"><input id="pw-digit" type="checkbox" checked><span>0–9</span></label>
+              <label class="check" for="pw-sym" data-m="acak"><input id="pw-sym" type="checkbox" checked><span>Simbol</span></label>
+              <label class="check" for="pw-amb" data-m="acak huruf"><input id="pw-amb" type="checkbox"><span>Hindari karakter mirip (0 O 1 l I)</span></label>
+              <label class="check" for="pw-start" data-m="acak"><input id="pw-start" type="checkbox"><span>Mulai dengan huruf</span></label>
+              <label class="check" for="pw-norep" data-m="acak"><input id="pw-norep" type="checkbox"><span>Tanpa karakter kembar berdampingan</span></label>
+              <label class="check" for="pw-pron" data-m="huruf" hidden><input id="pw-pron" type="checkbox"><span>Mudah diucapkan</span></label>
+              <label class="check" for="pw-noseq" data-m="angka" hidden><input id="pw-noseq" type="checkbox" checked><span>Hindari urutan dan angka kembar (1234, 1111)</span></label>
+              <label class="check" for="pw-dnum" data-m="dadu" hidden><input id="pw-dnum" type="checkbox" checked><span>Tambah angka</span></label>
+              <label class="check" for="pw-dsym" data-m="dadu" hidden><input id="pw-dsym" type="checkbox" checked><span>Tambah simbol</span></label>
+              <label class="check" for="pw-leet" data-m="dadu tgl" hidden><input id="pw-leet" type="checkbox"><span>Leetspeak (a→4, e→3, o→0)</span></label>
+            </div>
+
+            <div class="pw-list" id="pw-list" hidden></div>
+            <div class="row" style="margin-top:0">
+              <button class="btn primary" id="pw-gen" type="button"><span class="die" aria-hidden="true">🎲</span> Kocok lagi</button>
+            </div>
           </div>
         </div>
       </section>
@@ -787,11 +1046,11 @@ textarea:focus, select:focus { outline: none; border-color: var(--accent); box-s
         </header>
 
         <div class="links">
-          <a class="glass linkrow" data-social="instagram" href="https://www.instagram.com/arpystudio_?mdxt=M3F3czA2MTFodzRp" target="_blank" rel="noopener"><span><strong>Instagram</strong><small>@arpystudio_</small></span><svg class="ic sm"><use href="#i-arrow"/></svg></a>
-          <a class="glass linkrow" href="https://github.com/fayes678" target="_blank" rel="noopener"><span><strong>GitHub</strong><small>Kode dan proyek</small></span><svg class="ic sm"><use href="#i-arrow"/></svg></a>
-          <a class="glass linkrow" data-social="youtube" href="https://youtube.com/@shinoyoshin?si=jTLmqku1Gx1HYdsr" target="_blank" rel="noopener"><span><strong>YouTube</strong><small>Video dan tutorial</small></span><svg class="ic sm"><use href="#i-arrow"/></svg></a>
-          <a class="glass linkrow" data-social="tiktok" href="https://www.tiktok.com/@arpyyoshin?_r=1&_t=ZS-9BGOiTwn8Mf" target="_blank" rel="noopener"><span><strong>TikTok</strong><small>Konten singkat</small></span><svg class="ic sm"><use href="#i-arrow"/></svg></a>
-          <a class="glass linkrow" data-social="discord" href="https://discord.gg/4nK6kwjBhE" target="_blank" rel="noopener"><span><strong>Discord · Arpy Studio</strong><small>Ngobrol bareng komunitas</small></span><svg class="ic sm"><use href="#i-arrow"/></svg></a>
+          <a class="glass linkrow" data-social="instagram" href="https://www.instagram.com/arpystudio_?mdxt=M3F3czA2MTFodzRp" target="_blank" rel="noopener"><span><strong>Instagram</strong><small>Akun Instagram Arpy Studio · @arpystudio_</small></span><svg class="ic sm"><use href="#i-arrow"/></svg></a>
+          <a class="glass linkrow" href="https://github.com/fayes678" target="_blank" rel="noopener"><span><strong>GitHub</strong><small>Akun GitHub · fayes678</small></span><svg class="ic sm"><use href="#i-arrow"/></svg></a>
+          <a class="glass linkrow" data-social="youtube" href="https://youtube.com/@shinoyoshin?si=jTLmqku1Gx1HYdsr" target="_blank" rel="noopener"><span><strong>YouTube</strong><small>Akun YouTube · @shinoyoshin</small></span><svg class="ic sm"><use href="#i-arrow"/></svg></a>
+          <a class="glass linkrow" data-social="tiktok" href="https://www.tiktok.com/@arpyyoshin?_r=1&_t=ZS-9BGOiTwn8Mf" target="_blank" rel="noopener"><span><strong>TikTok</strong><small>Akun TikTok · @arpyyoshin</small></span><svg class="ic sm"><use href="#i-arrow"/></svg></a>
+          <a class="glass linkrow" data-social="discord" href="https://discord.gg/4nK6kwjBhE" target="_blank" rel="noopener"><span><strong>Discord · Arpy Studio</strong><small>Server komunitas · gabung dan ngobrol</small></span><svg class="ic sm"><use href="#i-arrow"/></svg></a>
         </div>
       </section>
 
@@ -873,6 +1132,18 @@ textarea:focus, select:focus { outline: none; border-color: var(--accent); box-s
         </header>
 
         <div class="grid duo">
+          <div class="glass card" id="fx-card">
+            <h3>Performa &amp; efek</h3>
+            <div class="chips" id="fx-chips" role="radiogroup" aria-label="Level efek">
+              <button class="chip" type="button" role="radio" data-l="auto">Auto</button>
+              <button class="chip" type="button" role="radio" data-l="low">Low</button>
+              <button class="chip" type="button" role="radio" data-l="medium">Medium</button>
+              <button class="chip" type="button" role="radio" data-l="high">High</button>
+              <button class="chip" type="button" role="radio" data-l="ultra">Ultra</button>
+            </div>
+            <p class="note" id="fx-note" aria-live="polite"></p>
+            <div class="row"><button class="btn small" id="fx-intro" type="button">Putar ulang intro</button></div>
+          </div>
           <div class="glass card">
             <h3>Sound &amp; suasana</h3>
             <label class="switch" for="set-sound"><input id="set-sound" type="checkbox" checked><span class="track"></span><span>Sound hover &amp; klik</span></label>
@@ -920,6 +1191,14 @@ textarea:focus, select:focus { outline: none; border-color: var(--accent); box-s
         <span>© 2026 Bimo Arya · Arpi Homes</span>
         <span>Dibuat dengan tenang.</span>
       </footer>
+    <section class="view" id="akun">
+        <header class="head"><p class="eyebrow">Akun</p><h2>Profil &amp; <em>akses</em>.</h2><p class="lead">Masuk untuk menyimpan build PSU dan melihat laporanmu. Akun admin mendapat menu Admin tambahan.</p></header>
+        <div class="glass panel" id="akun-body"></div>
+      </section>
+      <section class="view" id="admin">
+        <header class="head"><p class="eyebrow">Admin</p><h2>Panel <em>admin</em>.</h2><p class="lead">Kelola pengguna, laporan, konten situs, dan katalog PSU. Setiap perubahan tercatat di audit.</p></header>
+        <div class="glass panel" id="adm-body"></div>
+      </section>
     </main>
   </div>
 
@@ -1045,6 +1324,9 @@ textarea:focus, select:focus { outline: none; border-color: var(--accent); box-s
         ensure();
         if (st.on && st.amb) ambientStart();
       },
+      intro() { [261.63, 392, 523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, { dur: 1.6, vol: 0.07, delay: i * 0.12, bell: 2.76, lp: 3400, wet: 1 })); tone(130.81, { dur: 2.4, vol: 0.09, lp: 700, atk: 0.5, wet: 0.6 }); },
+      whoosh() { tone(220, { dur: 0.8, vol: 0.06, type: 'sawtooth', glide: 5, lp: 2200, atk: 0.08, wet: 0.5 }); tone(1400, { dur: 0.6, vol: 0.025, glide: 0.35, lp: 3000, atk: 0.05, wet: 0.8 }); },
+      land() { tone(880, { dur: 1, vol: 0.1, bell: 2.76, wet: 0.9 }); tone(1318.51, { dur: 1.3, vol: 0.07, delay: 0.09, bell: 2.76, wet: 1 }); tone(1760, { dur: 1.5, vol: 0.04, delay: 0.18, wet: 1 }); },
       // Hover: satu "ting" kecil dari tangga nada pentatonik
       hover() {
         const n = performance.now();
@@ -1100,6 +1382,7 @@ textarea:focus, select:focus { outline: none; border-color: var(--accent); box-s
     if (el && el !== lastHovered) { lastHovered = el; Sound.hover(); }
     else if (!el) lastHovered = null;
   });
+  window.__Sound = Sound;
   const unlock = () => Sound.unlock();
   document.addEventListener('pointerdown', unlock);
   document.addEventListener('keydown', unlock);
@@ -1155,7 +1438,7 @@ textarea:focus, select:focus { outline: none; border-color: var(--accent); box-s
      ===================================================================== */
   const TABS = {
     'home': 'Arpi Homes', 'tools': 'Tools', 'music': 'Music Player',
-    'community': 'Arpy Studio', 'link': 'Link', 'support': 'Support', 'donasi': 'Donasi', 'lainnya': 'Lainnya'
+    'community': 'Arpy Studio', 'link': 'Link', 'support': 'Support', 'donasi': 'Donasi', 'lainnya': 'Lainnya', 'akun': 'Akun', 'admin': 'Admin'
   };
   const ORDER = Object.keys(TABS);
   let current = null;
@@ -1230,7 +1513,14 @@ textarea:focus, select:focus { outline: none; border-color: var(--accent); box-s
      TOOLS
      ===================================================================== */
 
-  /* --- Subnet calculator --- */
+  /* --- Subnet calculator ---
+     Input yang dimengerti (otomatis dideteksi):
+       192.168.10.37/26            IP/CIDR
+       192.168.10.37 255.255.255.192   IP + netmask
+       192.168.10.0 0.0.0.63       IP + wildcard
+       255.255.255.192 / 0.0.0.63 / /26 / 26   netmask, wildcard, atau prefix saja
+       192.168.10.37               IP saja (prefix ditebak dari kelas)
+     ------------------------------------------------------------------ */
   function ipToInt(s) {
     const p = s.trim().split('.');
     if (p.length !== 4) return null;
@@ -1258,115 +1548,1020 @@ textarea:focus, select:focus { outline: none; border-color: var(--accent); box-s
     return { ip, mask, net, bc, wild, first, last, hosts, total };
   }
 
-  function parseCidr(str) {
-    const m = str.trim().match(/^(\d{1,3}(?:\.\d{1,3}){3})\s*\/\s*(\d{1,2})$/);
-    return m ? { ip: m[1], cidr: Number(m[2]) } : null;
+  const maskOf = c => (c <= 0 ? 0 : (0xFFFFFFFF << (32 - c)) >>> 0);
+  const wildOf = c => (~maskOf(c)) >>> 0;
+
+  /* Netmask valid = bit 1 berurutan dari kiri. Hasilnya prefix, atau null kalau tidak valid. */
+  function maskToCidr(n) {
+    n = n >>> 0;
+    let c = 0;
+    while (c < 32 && (n & (0x80000000 >>> c))) c++;
+    return n === maskOf(c) ? c : null;
   }
+
+  const classOf = n => { const a = n >>> 24; return a < 128 ? 'A' : a < 192 ? 'B' : a < 224 ? 'C' : a < 240 ? 'D (multicast)' : 'E (cadangan)'; };
 
   function ipKind(n) {
     const a = n >>> 24, b = (n >>> 16) & 255;
+    if (n === 0) return 'Unspecified';
+    if (a === 0) return 'This network';
     if (a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168)) return 'Private';
+    if (a === 100 && b >= 64 && b <= 127) return 'CGNAT (shared)';
     if (a === 127) return 'Loopback';
     if (a === 169 && b === 254) return 'Link-local';
     if (a >= 224 && a <= 239) return 'Multicast';
+    if (a >= 240) return 'Cadangan';
     return 'Public';
   }
 
-  function renderSubnet() {
-    const out = $('#sn-out'), err = $('#sn-err');
-    const p = parseCidr($('#sn-in').value);
-    const s = p && subnet(p.ip, p.cidr);
-    err.hidden = !!s;
-    if (!s) { out.innerHTML = ''; return; }
-    const rows = [
-      ['Network', intToIp(s.net) + '/' + p.cidr],
-      ['Netmask', intToIp(s.mask)],
-      ['Wildcard', intToIp(s.wild)],
-      ['Broadcast', intToIp(s.bc)],
-      ['Host pertama', intToIp(s.first)],
-      ['Host terakhir', intToIp(s.last)],
-      ['Jumlah host', s.hosts.toLocaleString('id-ID')],
-      ['Tipe alamat', ipKind(s.ip)]
-    ];
-    out.innerHTML = rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
-  }
-  $('#sn-in').addEventListener('input', renderSubnet);
-  renderSubnet();
+  /* Baca input bebas. Hasil: {empty} | {error, val?} | {mode, ip|null, cidr}
+     mode: cidr | mask | wild | ipOnly | maskonly | wildonly | prefix */
+  function parseNet(str) {
+    const t = String(str).trim();
+    if (!t) return { empty: true };
 
-  /* --- RouterOS generator --- */
+    const num = t.match(/^\/?\s*(\d{1,2})$/);
+    if (num) {
+      const c = Number(num[1]);
+      return c <= 32 ? { mode: 'prefix', ip: null, cidr: c } : { error: 'prefix' };
+    }
+
+    const tok = t.split(/\s*\/\s*|\s+/).filter(Boolean);
+    if (!tok.length || tok.length > 2) return { error: 'format' };
+    const looksIp = x => /^[\d.]+$/.test(x);
+
+    const a = ipToInt(tok[0]);
+    if (a === null) return { error: looksIp(tok[0]) ? 'ip' : 'format' };
+
+    if (tok.length === 1) {
+      const mc = maskToCidr(a), wc = maskToCidr((~a) >>> 0);
+      if (a !== 0 && mc !== null) return { mode: 'maskonly', ip: null, cidr: mc };
+      if (a !== 0 && (a >>> 24) === 0 && wc !== null) return { mode: 'wildonly', ip: null, cidr: wc };
+      const A = a >>> 24;
+      const cidr = a === 0 ? 0 : A < 128 ? 8 : A < 192 ? 16 : A < 224 ? 24 : 32;
+      return { mode: 'ipOnly', ip: a, cidr };
+    }
+
+    if (/^\d{1,3}$/.test(tok[1])) {
+      const c = Number(tok[1]);
+      return c <= 32 ? { mode: 'cidr', ip: a, cidr: c } : { error: 'prefix' };
+    }
+
+    const b = ipToInt(tok[1]);
+    if (b === null) return { error: looksIp(tok[1]) ? 'ip' : 'format' };
+    if (b === 0xFFFFFFFF) return { mode: 'mask', ip: a, cidr: 32 };          // 255.255.255.255 = /32
+    if (b === 0) return a === 0 ? { mode: 'mask', ip: a, cidr: 0 } : { mode: 'wild', ip: a, cidr: 32 }; // 0.0.0.0 = wildcard host
+    const mc = maskToCidr(b), wc = maskToCidr((~b) >>> 0);
+    if (mc !== null) return { mode: 'mask', ip: a, cidr: mc };
+    if (wc !== null) return { mode: 'wild', ip: a, cidr: wc };
+    return { error: 'contig', val: intToIp(b) };
+  }
+
+  /* Dipakai juga oleh generator RouterOS: butuh IP + prefix yang eksplisit. */
+  function parseCidr(str) {
+    const r = parseNet(str);
+    return r && !r.error && !r.empty && r.ip !== null && r.mode !== 'ipOnly' ? { ip: intToIp(r.ip), cidr: r.cidr } : null;
+  }
+
+  function analyze(r) {
+    const hasIp = r.ip !== null;
+    const s = subnet(intToIp(hasIp ? r.ip : 0), r.cidr);
+    return Object.assign({}, s, { hasIp, cidr: r.cidr, mode: r.mode });
+  }
+
+  /* ---------- tampilan ---------- */
+  let snSplitK = 0, snParent = 'auto', snShown = 64;
+  const hex8 = n => '0x' + (n >>> 0).toString(16).toUpperCase().padStart(8, '0');
+  const fmtN = n => n.toLocaleString('id-ID');
+  const hostsTxt = s => s.cidr === 32 ? '1 (host tunggal)' : s.cidr === 31 ? '2 (RFC 3021)' : fmtN(s.hosts);
+
+  function cell(k, v, copy = v) {
+    const a = copy ? ` role="button" tabindex="0" data-v="${copy}" title="Klik untuk menyalin"` : '';
+    return `<div class="kvc"${a}><dt>${k}</dt><dd>${v}</dd></div>`;
+  }
+
+  function posText(s) {
+    if (s.cidr === 32) return 'Host tunggal';
+    if (s.cidr === 31) return s.ip === s.net ? 'Host 1 dari 2' : 'Host 2 dari 2';
+    if (s.ip === s.net) return 'Alamat network (bukan host)';
+    if (s.ip === s.bc) return 'Alamat broadcast (bukan host)';
+    return 'Host ke-' + fmtN(s.ip - s.first + 1) + ' dari ' + fmtN(s.hosts);
+  }
+
+  /* 32 bit dalam 4 oktet. click=true → tiap bit bisa diklik untuk mengatur prefix. */
+  function bitsHtml(n, cidr, o) {
+    let h = '';
+    for (let g = 0; g < 4; g++) {
+      h += '<span class="oct">';
+      for (let b = 0; b < 8; b++) {
+        const i = g * 8 + b, v = (n >>> (31 - i)) & 1;
+        let cls = 'bit ' + (i < cidr ? 'rn' : 'rh') + (v ? ' v1' : ' v0');
+        if (o.kind === 'mask' && v) cls += ' m1';
+        if (o.kind === 'wild' && v) cls += ' w1';
+        if (i === cidr) cls += ' edge';
+        h += o.click
+          ? `<span class="${cls}" role="button" tabindex="0" data-bit="${i}" aria-label="Jadikan /${i + 1}" title="Jadikan /${i + 1}">${v}</span>`
+          : `<span class="${cls}">${v}</span>`;
+      }
+      h += '</span>';
+    }
+    return `<div class="bits">${h}</div>`;
+  }
+
+  function splitHtml(s) {
+    const c = s.cidr;
+    if (!s.hasIp || c >= 32) return '';
+    const maxK = Math.min(8, 32 - c);
+    if (snSplitK > maxK) snSplitK = 0;
+    let opts = '<option value="0">Pilih jumlah…</option>';
+    for (let k = 1; k <= maxK; k++) opts += `<option value="${k}"${k === snSplitK ? ' selected' : ''}>${2 ** k} subnet · /${c + k}</option>`;
+    let list = '';
+    if (snSplitK) {
+      const k = snSplitK, n = 2 ** k, step = 2 ** (32 - c - k), shown = Math.min(n, 16);
+      for (let i = 0; i < shown; i++) {
+        const sub = subnet(intToIp((s.net + i * step) >>> 0), c + k);
+        const rng = sub.first === sub.last ? intToIp(sub.first) : intToIp(sub.first) + ' – ' + intToIp(sub.last);
+        const label = intToIp(sub.net) + '/' + (c + k);
+        list += `<div class="srow kvc" role="button" tabindex="0" data-load="${label}" title="Klik untuk memuat subnet ini"><b>${label}</b><span>${rng}</span><em>${fmtN(sub.hosts)} host</em></div>`;
+      }
+      if (n > shown) list += `<p class="note">…dan ${fmtN(n - shown)} subnet lainnya.</p>`;
+    }
+    return `<section class="sn-box"><p class="eyebrow">Pecah subnet</p>
+      <label class="field" for="sn-split"><span>Bagi ${intToIp(s.net)}/${c} menjadi</span><select id="sn-split">${opts}</select></label>${list}</section>`;
+  }
+
+  /* Berapa network yang bisa terbentuk dari blok induk (default: kelas A/B/C), plus daftarnya. */
+  function netsHtml(s) {
+    if (!s.hasIp) return '';
+    const c = s.cidr, a = s.ip >>> 24;
+    const classful = a < 128 ? 8 : a < 192 ? 16 : a < 224 ? 24 : null;
+    if (snParent !== 'auto' && Number(snParent) > c) snParent = 'auto';
+    const p = snParent === 'auto' ? (classful === null ? c : classful) : Number(snParent);
+    const blk = x => intToIp((s.ip & maskOf(x)) >>> 0) + '/' + x;
+
+    let opts = `<option value="auto"${snParent === 'auto' ? ' selected' : ''}>Otomatis${classful === null ? '' : ` · kelas ${classOf(s.ip).split(' ')[0]} (${blk(classful)})`}</option>`;
+    [8, 12, 16, 20, 24].filter(x => x <= c).forEach(x => {
+      opts += `<option value="${x}"${String(snParent) === String(x) ? ' selected' : ''}>${blk(x)}</option>`;
+    });
+    const sel = `<label class="field" for="sn-parent"><span>Hitung dari blok induk</span><select id="sn-parent">${opts}</select></label>`;
+
+    if (p > c) {
+      return `<section class="sn-box"><p class="eyebrow">Network yang terbentuk</p>${sel}
+        <p class="note">/${c} lebih besar dari blok induk /${p}: ini supernet yang menggabungkan ${fmtN(2 ** (p - c))} blok /${p}, jadi hanya 1 network.</p></section>`;
+    }
+
+    const parentNet = (s.ip & maskOf(p)) >>> 0;
+    const count = 2 ** (c - p), step = 2 ** (32 - c);
+    const idx = Math.floor((s.net - parentNet) / step);
+    const limit = Math.min(count, 1024), cap = Math.min(limit, snShown);
+    let list = '';
+    for (let i = 0; i < cap; i++) {
+      const sub = subnet(intToIp((parentNet + i * step) >>> 0), c);
+      const label = intToIp(sub.net) + '/' + c;
+      const rng = (sub.first === sub.last ? intToIp(sub.first) : intToIp(sub.first) + ' – ' + intToIp(sub.last)) + (c < 31 ? ' · bc ' + intToIp(sub.bc) : '');
+      list += `<div class="srow kvc${i === idx ? ' cur' : ''}" role="button" tabindex="0" data-load="${label}" title="Klik untuk memuat network ini"><b>${label}</b><span>${rng}</span><em>#${fmtN(i + 1)}${i === idx ? ' · kamu' : ''}</em></div>`;
+    }
+    if (cap < limit) list += `<button class="btn small" type="button" data-more>Tampilkan ${fmtN(Math.min(64, limit - cap))} lagi</button>`;
+    if (count > limit) list += `<p class="note">Tampilan dibatasi ${fmtN(limit)} dari ${fmtN(count)} network.</p>`;
+
+    return `<section class="sn-box"><p class="eyebrow">Network yang terbentuk</p>${sel}
+      <p class="lead">Dari blok <b>${intToIp(parentNet)}/${p}</b> bisa terbentuk <b>${fmtN(count)}</b> network /${c} (2<sup>${c - p}</sup>), masing-masing ${fmtN(s.hosts)} host. IP ini ada di network urutan ke-${fmtN(idx + 1)}.</p>
+      ${list}</section>`;
+  }
+
+  const ERR = {
+    ip: 'Alamat IP tidak valid. Harus empat bagian, tiap bagian 0–255, contoh 192.168.10.37.',
+    prefix: 'Prefix harus antara 0 dan 32.',
+    format: 'Format belum dikenali. Coba 192.168.10.37/26, 192.168.10.37 255.255.255.192, atau 192.168.10.0 0.0.0.63.'
+  };
+  const FMT = {
+    cidr: 'Terbaca: IP/CIDR',
+    mask: 'Terbaca: IP + netmask',
+    wild: 'Terbaca: IP + wildcard',
+    maskonly: 'Terbaca: netmask saja',
+    wildonly: 'Terbaca: wildcard saja',
+    prefix: 'Terbaca: prefix saja'
+  };
+
+  function syncPrefixUI(c) {
+    if (c != null) { $('#sn-pref').value = c; $('#sn-pref-v').textContent = '/' + c; }
+    $$('#sn-quick .chip').forEach(b => b.classList.toggle('hot', c != null && Number(b.dataset.p) === c));
+  }
+
+  /* ---- Penjelasan otomatis: kenapa hasilnya begitu ---- */
+  function explainHtml(s) {
+    const c = s.cidr, nm = intToIp(s.mask), wc = intToIp(s.wild);
+    const o = c === 0 ? 0 : Math.ceil(c / 8) - 1, b = c - 8 * o, sh = 24 - 8 * o;
+    const mo = (s.mask >>> sh) & 255, blk = 2 ** (8 - b), L = [];
+    L.push(`<b>Prefix /${c}</b>: ${c} bit paling kiri adalah bagian network, ${32 - c} bit sisanya bagian host. Isi ${c} bit pertama dengan 1 dan sisanya 0, hasilnya netmask <b>${nm}</b>.`);
+    L.push(b === 8 && c < 32 ? `Prefix jatuh tepat di batas oktet, jadi oktet network disalin apa adanya dan oktet host berisi 0 sampai 255.`
+      : c === 0 ? `Tidak ada bit network, semua alamat IPv4 masuk satu blok.`
+      : `<b>Oktet penentu</b> adalah oktet ke-${o + 1} (${b} bit network, nilai netmask ${mo}). Ukuran blok = 256 − ${mo} = <b>${blk}</b>, jadi network di oktet itu selalu kelipatan ${blk}.`);
+    if (s.hasIp) {
+      const io = (s.ip >>> sh) & 255, no = (s.net >>> sh) & 255;
+      L.push(`<b>Network</b> = IP AND netmask: ${intToIp(s.ip)} AND ${nm} = <b>${intToIp(s.net)}</b>.` + (b < 8 && c > 0 ? ` Cara cepat: ${io} dibulatkan ke bawah ke kelipatan ${blk} jadi ${no}, oktet sesudahnya 0.` : ''));
+      if (c < 31) {
+        L.push(`<b>Broadcast</b> = network OR wildcard: ${intToIp(s.net)} OR ${wc} = <b>${intToIp(s.bc)}</b> (semua bit host bernilai 1).`);
+        L.push(`<b>Rentang host</b>: network + 1 = ${intToIp(s.first)} sampai broadcast − 1 = ${intToIp(s.last)}.`);
+      } else L.push(c === 31 ? `/31 tidak punya network dan broadcast. Kedua alamat (${intToIp(s.first)} dan ${intToIp(s.last)}) dipakai untuk link point-to-point.` : `/32 adalah satu alamat tunggal (host route), tidak ada rentang.`);
+    }
+    L.push(`<b>Jumlah host</b>: total alamat = 2^${32 - c} = ${fmtN(s.total)}.` + (c < 31 ? ` Dikurangi 2 (network dan broadcast) = <b>${fmtN(s.hosts)}</b> host.` : ` Pada /${c} semua alamat bisa dipakai.`));
+    if (s.hasIp) {
+      const k = ipKind(s.ip);
+      L.push(`<b>Tipe</b>: ${k}, kelas ${classOf(s.ip).split(' ')[0]}.` + (k === 'Private' ? ' Alamat private tidak diroute di internet, perlu NAT untuk keluar.' : k === 'Public' ? ' Alamat publik bisa diroute di internet.' : ''));
+    }
+    return `<section class="sn-box"><p class="eyebrow">Kenapa hasilnya begini?</p><ol class="note">${L.map(x => `<li>${x}</li>`).join('')}</ol></section>`;
+  }
+
+  /* ---- Latihan soal: jawab manual atau otomatis ---- */
+  const rnd = n => Math.floor(Math.random() * n), pick = a => a[rnd(a.length)];
+  let QZ = null, qzOk = 0, qzAll = 0;
+  function newQuestion() {
+    const c = 16 + rnd(15), base = pick([[192, 168], [10, rnd(256)], [172, 16 + rnd(16)]]);
+    const ip = `${base[0]}.${base[1]}.${rnd(256)}.${1 + rnd(254)}`, s = subnet(ip, c), nm = intToIp(s.mask), t = pick(['net', 'bc', 'hosts', 'first', 'last', 'mask', 'prefix']);
+    const w = `${ip}/${c}`;
+    const Q = {
+      net: { q: `Berapa alamat network dari ${w}?`, a: intToIp(s.net), why: `Network = IP AND netmask: ${ip} AND ${nm} = ${intToIp(s.net)}.`, calc: w },
+      bc: { q: `Berapa alamat broadcast dari ${w}?`, a: intToIp(s.bc), why: `Broadcast = network OR wildcard = ${intToIp(s.net)} OR ${intToIp(s.wild)} = ${intToIp(s.bc)}.`, calc: w },
+      hosts: { q: `Berapa jumlah host yang bisa dipakai pada /${c}?`, a: String(s.hosts), why: `2^${32 - c} = ${s.total} alamat, dikurangi 2 (network dan broadcast) = ${s.hosts}.`, calc: ip + '/' + c },
+      first: { q: `Berapa host pertama dari ${w}?`, a: intToIp(s.first), why: `Host pertama = network + 1 = ${intToIp(s.net)} + 1 = ${intToIp(s.first)}.`, calc: w },
+      last: { q: `Berapa host terakhir dari ${w}?`, a: intToIp(s.last), why: `Host terakhir = broadcast − 1 = ${intToIp(s.bc)} − 1 = ${intToIp(s.last)}.`, calc: w },
+      mask: { q: `Berapa netmask untuk /${c}?`, a: nm, why: `${c} bit pertama bernilai 1 lalu sisanya 0, sehingga ${nm}.`, calc: '/' + c }
+    };
+    if (t === 'prefix') {
+      const n = pick([10, 25, 50, 100, 200, 500, 1000]); let p = 30;
+      while (p > 0 && 2 ** (32 - p) - 2 < n) p--;
+      return { q: `Sebuah LAN butuh ${n} host. Prefix terpanjang yang masih cukup? (jawab mis. /26)`, a: '/' + p, why: `${n} + 2 = ${n + 2}, pangkat 2 terkecil ≥ ${n + 2} adalah 2^${32 - p} = ${2 ** (32 - p)}. Bit host ${32 - p}, prefix = 32 − ${32 - p} = /${p} (${2 ** (32 - p) - 2} host).`, calc: '/' + p, num: true };
+    }
+    const r = Q[t]; r.num = t === 'hosts'; return r;
+  }
+  const normA = (s, num) => { s = String(s).trim().toLowerCase().replace(/\s+/g, ''); return num ? s.replace(/[^0-9]/g, '') : s; };
+  function showQ() {
+    QZ = newQuestion(); $('#qz-q strong').textContent = QZ.q; $('#qz-a').value = ''; $('#qz-r').textContent = ''; $('#qz-r').className = 'note';
+    if ($('#qz-autoon').checked) autoAnswer();
+  }
+  function autoAnswer() { $('#qz-a').value = QZ.a; $('#qz-r').textContent = `Jawaban: ${QZ.a}. ${QZ.why}`; }
+  $('#qz-chk').onclick = () => {
+    const a = $('#qz-a').value; if (!a.trim()) { $('#qz-r').textContent = 'Isi kotak jawaban dulu, atau tekan Jawab otomatis.'; return; }
+    const good = normA(a, QZ.num) === normA(QZ.a, QZ.num); qzAll++; if (good) qzOk++;
+    $('#qz-s').textContent = `Skor: ${qzOk} / ${qzAll}`;
+    $('#qz-r').textContent = (good ? 'Benar! ' : `Belum tepat, jawabannya ${QZ.a}. `) + QZ.why;
+  };
+  $('#qz-a').addEventListener('keydown', e => { if (e.key === 'Enter') $('#qz-chk').click(); });
+  $('#qz-auto').onclick = autoAnswer;
+  $('#qz-new').onclick = showQ;
+  $('#qz-use').onclick = () => { $('#sn-in').value = QZ.calc; renderSubnet(); $('#sn-out').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  showQ();
+
+  function renderSubnet() {
+    const out = $('#sn-out'), err = $('#sn-err'), fmt = $('#sn-fmt');
+    const r = parseNet($('#sn-in').value);
+
+    if (r.empty) {
+      err.hidden = true; fmt.hidden = true; syncPrefixUI(null);
+      out.innerHTML = '<p class="note">Ketik alamat, atau pilih salah satu contoh di atas.</p>';
+      return;
+    }
+    if (r.error) {
+      fmt.hidden = true; syncPrefixUI(null); out.innerHTML = '';
+      err.textContent = r.error === 'contig'
+        ? `${r.val} bukan netmask yang valid: bit 1 harus berurutan dari kiri (contoh 255.255.255.192). Kalau maksudnya wildcard, bit 0 yang harus berurutan (contoh 0.0.0.63).`
+        : ERR[r.error] || ERR.format;
+      err.hidden = false;
+      return;
+    }
+
+    err.hidden = true;
+    const s = analyze(r), c = s.cidr;
+    fmt.textContent = r.mode === 'ipOnly'
+      ? `Tanpa prefix: dipakai /${c} (kelas ${classOf(s.ip).split(' ')[0]}). Tambahkan /prefix untuk mengubah.`
+      : `${FMT[r.mode]} → /${c}`;
+    fmt.hidden = false;
+    syncPrefixUI(c);
+
+    const ipTxt = s.hasIp ? intToIp(s.ip) : '';
+    const netTxt = s.hasIp ? intToIp(s.net) : '';
+    let h = '';
+
+    /* Alamat */
+    if (s.hasIp) {
+      const bcTxt = c >= 31 ? '—' : intToIp(s.bc);
+      h += `<section class="sn-box"><p class="eyebrow">Alamat</p><dl class="kv">
+        ${cell('Network', netTxt + '/' + c)}
+        ${cell('Broadcast', bcTxt, c >= 31 ? '' : bcTxt)}
+        ${cell('Host pertama', intToIp(s.first))}
+        ${cell('Host terakhir', intToIp(s.last))}
+        ${cell('Jumlah host', hostsTxt(s), String(s.hosts))}
+        ${cell('Total alamat', fmtN(s.total), String(s.total))}
+        ${cell('Tipe alamat', ipKind(s.ip) + ' · Kelas ' + classOf(s.ip), '')}
+        ${cell('Posisi IP', posText(s), '')}
+      </dl>
+      <p class="eyebrow">IP dalam biner</p>
+      ${bitsHtml(s.ip, c, { kind: 'ip' })}
+      <p class="note">Garis pemisah menandai batas /${c}. Network = IP AND netmask; bit di kanan garis adalah bagian host.</p></section>`;
+    } else {
+      h += `<section class="sn-box"><p class="eyebrow">Per subnet</p><dl class="kv">
+        ${cell('Jumlah host', hostsTxt(s), String(s.hosts))}
+        ${cell('Total alamat', fmtN(s.total), String(s.total))}
+      </dl>
+      <p class="note">Tambahkan IP di depan, misalnya 192.168.10.37/${c}, untuk melihat network, broadcast, dan rentang host.</p></section>`;
+    }
+
+    /* Netmask + Wildcard */
+    const nm = intToIp(s.mask), wc = intToIp(s.wild);
+    const usage = [];
+    if (s.hasIp) {
+      usage.push(['Cisco ACL', c === 32 ? `access-list 10 permit host ${ipTxt}` : `access-list 10 permit ${netTxt} ${wc}`]);
+      usage.push(['OSPF', `network ${netTxt} ${wc} area 0`]);
+      usage.push(['MikroTik (pakai prefix)', `/ip firewall address-list add list=LAN address=${netTxt}/${c}`]);
+    }
+    h += `<div class="sn-grid">
+      <section class="sn-box">
+        <p class="eyebrow">Netmask</p>
+        <div class="sn-big kvc" role="button" tabindex="0" data-v="${nm}" title="Klik untuk menyalin">${nm}</div>
+        <div class="chips">
+          <span class="chip hot kvc" role="button" tabindex="0" data-v="/${c}" title="Klik untuk menyalin">/${c}</span>
+          <span class="chip kvc" role="button" tabindex="0" data-v="${hex8(s.mask)}" title="Klik untuk menyalin">${hex8(s.mask)}</span>
+          <span class="chip">${fmtN(s.total)} alamat</span>
+        </div>
+        ${bitsHtml(s.mask, c, { kind: 'mask', click: true })}
+        <p class="note">Bit terang = network (1). Klik bit mana pun untuk menjadikannya bit network terakhir, prefix ikut berubah.</p>
+      </section>
+      <section class="sn-box">
+        <p class="eyebrow">Wildcard</p>
+        <div class="sn-big kvc" role="button" tabindex="0" data-v="${wc}" title="Klik untuk menyalin">${wc}</div>
+        <div class="chips">
+          <span class="chip">kebalikan netmask</span>
+          <span class="chip kvc" role="button" tabindex="0" data-v="${hex8(s.wild)}" title="Klik untuk menyalin">${hex8(s.wild)}</span>
+        </div>
+        ${bitsHtml(s.wild, c, { kind: 'wild', click: true })}
+        <p class="note">Bit 0 = harus sama, bit 1 = boleh beda (bagian host). Dipakai di ACL dan OSPF.</p>
+        ${usage.map(([k, v]) => `<div class="code kvc" role="button" tabindex="0" data-v="${v}" title="Klik untuk menyalin"><small>${k}</small><code>${v}</code></div>`).join('')}
+      </section>
+    </div>`;
+
+    h += explainHtml(s) + netsHtml(s) + splitHtml(s);
+    out.innerHTML = h;
+  }
+
+  /* Ubah prefix dari slider / chip / bit, lalu tulis balik ke kolom input dengan format yang sama. */
+  function setPrefix(n) {
+    n = Math.max(0, Math.min(32, Math.floor(Number(n) || 0)));
+    const r = parseNet($('#sn-in').value);
+    const ip = !r.empty && !r.error && r.ip !== null ? intToIp(r.ip) : null;
+    let txt = '/' + n;
+    if (!r.empty && !r.error) {
+      switch (r.mode) {
+        case 'mask': txt = `${ip} ${intToIp(maskOf(n))}`; break;
+        case 'wild': txt = `${ip} ${intToIp(wildOf(n))}`; break;
+        case 'maskonly': txt = intToIp(maskOf(n)); break;
+        case 'wildonly': txt = intToIp(wildOf(n)); break;
+        case 'prefix': txt = '/' + n; break;
+        default: txt = `${ip}/${n}`;
+      }
+    }
+    // Pastikan teks baru terbaca balik sebagai prefix yang sama (hindari 0.0.0.0 / 255.255.255.255 yang ambigu)
+    const chk = parseNet(txt);
+    if (chk.error || chk.cidr !== n) txt = ip ? `${ip}/${n}` : '/' + n;
+    $('#sn-in').value = txt;
+    renderSubnet();
+  }
+
+  /* Cari prefix paling pas untuk jumlah host tertentu */
+  function needHosts() {
+    const out = $('#sn-need-r'), v = Math.floor(Number($('#sn-need').value));
+    if (!v || v < 1) { out.textContent = 'Isi jumlah host untuk dapat prefix yang pas.'; return; }
+    if (v > 4294967294) { out.textContent = 'Terlalu besar. Maksimum 4.294.967.294 host.'; return; }
+    let p = 32;
+    if (v > 1) { p = 30; while (p > 0 && 2 ** (32 - p) - 2 < v) p--; }
+    const usable = p === 32 ? 1 : 2 ** (32 - p) - 2;
+    out.innerHTML = `Pakai <b>/${p}</b> · ${fmtN(usable)} host, sisa ${fmtN(usable - v)} <button class="btn small" type="button" data-use="${p}">Terapkan</button>`;
+  }
+
+  /* Contoh siap pakai: bawaan di sini, dan ditimpa dari tabel tool_subnet_presets (Supabase) bila ada */
+  const SN_FALLBACK = [
+    { label: 'Rumah / kantor kecil', value: '192.168.1.0/24', note: '254 host' },
+    { label: 'MikroTik default', value: '192.168.88.1/24', note: 'LAN bawaan RouterOS' },
+    { label: 'Segmen 30 host', value: '192.168.10.0/27', note: 'Satu VLAN kecil' },
+    { label: 'Link point-to-point', value: '10.0.0.0/30', note: 'Dua router' },
+    { label: 'IP + wildcard (ACL)', value: '192.168.10.0 0.0.0.63', note: 'Gaya Cisco ACL / OSPF' },
+    { label: 'Netmask saja', value: '255.255.255.192', note: 'Lihat prefix dan jumlah host' }
+  ];
+  function renderPresets(list) {
+    const box = $('#sn-presets'); box.textContent = '';
+    list.slice(0, 12).forEach(p => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip';
+      b.textContent = String(p.label || '').slice(0, 40);
+      b.dataset.value = String(p.value || '').slice(0, 60);
+      b.title = (p.note ? p.note + ' · ' : '') + b.dataset.value;
+      box.append(b);
+    });
+  }
+  window.addEventListener('subnet-presets', e => { if (Array.isArray(e.detail) && e.detail.length) renderPresets(e.detail); });
+
+  (function initSubnet() {
+    const snp = $('#p-subnet');
+    $('#sn-quick').append(...[8, 16, 20, 24, 25, 26, 27, 28, 29, 30, 31, 32].map(p => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip'; b.dataset.p = p; b.textContent = '/' + p;
+      return b;
+    }));
+    renderPresets(SN_FALLBACK);
+
+    $('#sn-in').addEventListener('input', () => { snShown = 64; renderSubnet(); });
+    $('#sn-pref').addEventListener('input', e => setPrefix(e.target.value));
+    $('#sn-need').addEventListener('input', needHosts);
+
+    snp.addEventListener('click', e => {
+      const t = e.target; let el;
+      if ((el = t.closest('[data-bit]'))) return setPrefix(Number(el.dataset.bit) + 1);
+      if ((el = t.closest('[data-load]'))) { $('#sn-in').value = el.dataset.load; return renderSubnet(); }
+      if ((el = t.closest('[data-more]'))) { snShown += 64; return renderSubnet(); }
+      if ((el = t.closest('[data-v]'))) return copyText(el.dataset.v);
+      if ((el = t.closest('[data-p]'))) return setPrefix(Number(el.dataset.p));
+      if ((el = t.closest('[data-use]'))) return setPrefix(Number(el.dataset.use));
+      if ((el = t.closest('#sn-presets button'))) { $('#sn-in').value = el.dataset.value; renderSubnet(); }
+    });
+    snp.addEventListener('keydown', e => {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[role="button"]')) { e.preventDefault(); e.target.click(); }
+    });
+    snp.addEventListener('change', e => {
+      const id = e.target.id;
+      if (id === 'sn-split') snSplitK = Number(e.target.value) || 0;
+      else if (id === 'sn-parent') { snParent = e.target.value; snShown = 64; }
+      else return;
+      renderSubnet();
+      const f = $('#' + id); if (f) f.focus();
+    });
+
+    renderSubnet();
+    needHosts();
+  })();
+
+  /* --- RouterOS generator ---
+     Menghubungkan LAN ke internet lewat NAT masquerade, lengkap dengan
+     jenis WAN (DHCP / statis / PPPoE), DHCP server, DNS, dan firewall dasar.
+     Semua isian divalidasi dulu; script hanya dibuat kalau tidak ada masalah. */
+  const rosName = s => /^[A-Za-z0-9_.\-]{1,32}$/.test(s);
+  const rosQ = s => String(s).replace(/[\\"$?]/g, m => '\\' + m);
+
   function renderRos() {
-    const out = $('#ros-out'), err = $('#ros-err');
+    const out = $('#ros-out'), err = $('#ros-err'), warn = $('#ros-warn'), sum = $('#ros-sum');
+    const type = $('#ros-wantype').value;
+    $$('#p-ros [data-wan]').forEach(el => { el.hidden = el.dataset.wan !== type; });
+
     const wan = $('#ros-wan').value.trim() || 'ether1';
     const lan = $('#ros-lan').value.trim() || 'ether2';
-    const dns = $('#ros-dns').value.replace(/\s+/g, '') || '8.8.8.8';
+    const dnsList = ($('#ros-dns').value.replace(/\s+/g, '') || '1.1.1.1,8.8.8.8').split(',').filter(Boolean);
+    const useNat = $('#ros-nat').checked, useFw = $('#ros-fw').checked;
+    const useDhcp = $('#ros-dhcps').checked, dnsSelf = $('#ros-dnsself').checked;
+    const errors = [], warns = [];
+
+    if (!rosName(wan)) errors.push('Nama interface WAN hanya boleh huruf, angka, titik, minus, dan garis bawah.');
+    if (!rosName(lan)) errors.push('Nama interface LAN hanya boleh huruf, angka, titik, minus, dan garis bawah.');
+    if (rosName(wan) && wan === lan) errors.push('Interface WAN dan LAN tidak boleh sama.');
+    if (dnsList.some(d => ipToInt(d) === null)) errors.push('DNS harus berupa alamat IP, pisahkan dengan koma. Contoh: 1.1.1.1,8.8.8.8');
+
+    /* LAN */
     const p = parseCidr($('#ros-addr').value);
     const s = p && subnet(p.ip, p.cidr);
-    err.hidden = !!s;
-    if (!s) { out.textContent = ''; return; }
-
-    let pool = $('#ros-pool').value.trim();
-    if (!pool) {
-      let start = s.hosts >= 30 ? s.net + 10 : s.first + 1;
-      const end = s.last;
-      if (s.ip >= start && s.ip <= end) start = s.ip + 1;
-      pool = start <= end ? intToIp(start) + '-' + intToIp(end) : intToIp(s.first) + '-' + intToIp(s.last);
+    if (!s) errors.push('Alamat LAN belum valid. Contoh: 192.168.88.1/24 atau 192.168.88.1 255.255.255.0');
+    else if (p.cidr > 30) errors.push('LAN butuh minimal /30 supaya ada alamat untuk router dan perangkat.');
+    else {
+      if (s.ip === s.net || s.ip === s.bc) errors.push(`${p.ip} adalah alamat ${s.ip === s.net ? 'network' : 'broadcast'}. Pakai alamat host untuk router, misalnya ${intToIp(s.first)}.`);
+      if (ipKind(s.ip) !== 'Private') warns.push('Subnet LAN bukan alamat private (RFC 1918). LAN biasanya memakai 192.168.x.x, 172.16–31.x.x, atau 10.x.x.x.');
     }
 
-    const lines = [
-      '# Dibuat oleh Arpi Homes. Cek dulu sebelum ditempel ke terminal.',
-      `/ip address add address=${p.ip}/${p.cidr} interface=${lan} comment="LAN"`,
-      `/ip pool add name=pool-lan ranges=${pool}`,
-      `/ip dhcp-server add name=dhcp-lan interface=${lan} address-pool=pool-lan disabled=no`,
-      `/ip dhcp-server network add address=${intToIp(s.net)}/${p.cidr} gateway=${p.ip} dns-server=${dns}`,
-      `/ip dns set servers=${dns} allow-remote-requests=yes`
-    ];
-    if ($('#ros-dhcpc').checked) lines.push(`/ip dhcp-client add interface=${wan} disabled=no comment="WAN"`);
-    if ($('#ros-nat').checked) lines.push(`/ip firewall nat add chain=srcnat out-interface=${wan} action=masquerade comment="NAT"`);
-    out.textContent = lines.join('\n');
+    /* WAN */
+    let wanAddr = null, gw = null, pppUser = '', pppPass = '';
+    if (type === 'static') {
+      wanAddr = parseCidr($('#ros-wanaddr').value);
+      const ws = wanAddr && subnet(wanAddr.ip, wanAddr.cidr);
+      gw = ipToInt($('#ros-wangw').value);
+      if (!ws) errors.push('Alamat WAN statis belum valid. Contoh: 203.0.113.10/29');
+      else {
+        if (wanAddr.cidr < 31 && (ws.ip === ws.net || ws.ip === ws.bc)) errors.push('Alamat WAN statis tidak boleh alamat network atau broadcast.');
+        if (gw === null) errors.push('Gateway belum valid. Contoh: 203.0.113.9');
+        else if (gw < ws.net || gw > ws.bc) errors.push('Gateway harus berada di dalam subnet WAN (' + intToIp(ws.net) + '/' + wanAddr.cidr + ').');
+        else if (gw === ws.ip) errors.push('Gateway tidak boleh sama dengan alamat WAN.');
+        if (s && s.net <= ws.bc && ws.net <= s.bc) errors.push('Subnet LAN bertabrakan dengan subnet WAN. Ganti salah satunya.');
+      }
+    } else if (type === 'pppoe') {
+      pppUser = $('#ros-pppu').value.trim(); pppPass = $('#ros-pppp').value;
+      if (!pppUser) errors.push('Isi username PPPoE dari ISP.');
+      if (!pppPass) warns.push('Password PPPoE masih kosong.');
+    }
+
+    /* Pool DHCP */
+    let ranges = '';
+    if (useDhcp && s && p.cidr <= 30) {
+      const raw = $('#ros-pool').value.trim().replace(/\s+/g, '');
+      const rip = s.ip;
+      if (raw) {
+        const m = raw.match(/^([\d.]+)-([\d.]+)$/);
+        const a = m && ipToInt(m[1]), b = m && ipToInt(m[2]);
+        if (!m || a === null || b === null || a > b) errors.push('Pool DHCP belum valid. Contoh: 192.168.88.10-192.168.88.254');
+        else if (a < s.first || b > s.last) errors.push('Pool DHCP harus di dalam subnet LAN (' + intToIp(s.first) + ' – ' + intToIp(s.last) + ').');
+        else { ranges = raw; if (rip >= a && rip <= b) warns.push('Pool memuat alamat router sendiri (' + p.ip + '). Sebaiknya dikeluarkan.'); }
+      } else {
+        // Sisakan .1–.9 untuk perangkat statis kalau subnet cukup besar, dan keluarkan alamat router dari pool
+        const lo = s.hosts >= 30 ? s.net + 10 : s.first, hi = s.last;
+        const segs = (rip < lo || rip > hi) ? [[lo, hi]] : [[lo, rip - 1], [rip + 1, hi]];
+        ranges = segs.filter(([x, y]) => x <= y).map(([x, y]) => intToIp(x) + '-' + intToIp(y)).join(',');
+      }
+    }
+
+    if (errors.length) {
+      err.textContent = errors.join('\n'); err.hidden = false;
+      warn.hidden = true; sum.hidden = true; out.textContent = '';
+      return;
+    }
+    err.hidden = true;
+
+    if (!useNat) warns.push('NAT mati: perangkat LAN tidak akan bisa ke internet, kecuali ISP merutekan subnet LAN ini ke routermu.');
+    if (useFw) warns.push('Firewall menolak akses dari luar port LAN. Tempel script lewat port ' + lan + ', jangan lewat ' + wan + ', supaya tidak terkunci.');
+    if (type !== 'static') warns.push('Pastikan subnet LAN tidak sama dengan subnet modem/ISP di sisi WAN (misalnya 192.168.1.0/24), kalau tidak internet tidak akan lewat.');
+
+    const wanIf = type === 'pppoe' ? 'pppoe-out1' : wan;
+    const dns = dnsList.join(',');
+    const net = intToIp(s.net), rip = p.ip;
+    const L = [];
+
+    L.push(`# Dibuat oleh Arpi Homes: LAN ${lan} ke internet lewat ${wanIf}${useNat ? ' dengan NAT' : ''}.`);
+    L.push('# Mulai dari konfigurasi kosong:  /system reset-configuration no-defaults=yes skip-backup=yes');
+    L.push(`# Tempel lewat port ${lan}, bukan ${wan}.`);
+    L.push('');
+
+    L.push('# --- WAN ---');
+    if (type === 'dhcp') {
+      L.push(`/ip dhcp-client add interface=${wan} add-default-route=yes use-peer-dns=no disabled=no comment="WAN"`);
+    } else if (type === 'static') {
+      L.push(`/ip address add address=${wanAddr.ip}/${wanAddr.cidr} interface=${wan} comment="WAN"`);
+      L.push(`/ip route add dst-address=0.0.0.0/0 gateway=${intToIp(gw)} comment="default route"`);
+    } else {
+      L.push(`/interface pppoe-client add name=pppoe-out1 interface=${wan} user="${rosQ(pppUser)}" password="${rosQ(pppPass)}" add-default-route=yes use-peer-dns=no disabled=no comment="WAN"`);
+    }
+    L.push('');
+
+    L.push('# --- LAN ---');
+    L.push(`/ip address add address=${rip}/${p.cidr} interface=${lan} comment="LAN"`);
+    L.push('');
+
+    L.push('# --- Interface list (dipakai NAT dan firewall) ---');
+    L.push('/interface list add name=WAN');
+    L.push('/interface list add name=LAN');
+    L.push(`/interface list member add list=WAN interface=${wanIf}`);
+    if (type === 'pppoe') L.push(`/interface list member add list=WAN interface=${wan}`);
+    L.push(`/interface list member add list=LAN interface=${lan}`);
+    L.push('');
+
+    L.push('# --- DNS ---');
+    L.push(`/ip dns set servers=${dns} allow-remote-requests=${dnsSelf ? 'yes' : 'no'}`);
+    L.push('');
+
+    if (useDhcp) {
+      L.push('# --- DHCP server ---');
+      L.push(`/ip pool add name=pool-lan ranges=${ranges}`);
+      L.push(`/ip dhcp-server add name=dhcp-lan interface=${lan} address-pool=pool-lan lease-time=1d disabled=no`);
+      L.push(`/ip dhcp-server network add address=${net}/${p.cidr} gateway=${rip} dns-server=${dnsSelf ? rip : dns}`);
+      L.push('');
+    }
+
+    if (useNat) {
+      L.push('# --- NAT: LAN ke internet ---');
+      L.push('/ip firewall nat add chain=srcnat action=masquerade out-interface-list=WAN comment="NAT LAN ke internet"');
+      if (type === 'pppoe') L.push('/ip firewall mangle add chain=forward action=change-mss new-mss=clamp-to-pmtu protocol=tcp tcp-flags=syn out-interface=pppoe-out1 passthrough=yes comment="clamp MSS PPPoE"');
+      L.push('');
+    }
+
+    if (useFw) {
+      L.push('# --- Firewall dasar ---');
+      L.push('/ip firewall filter');
+      L.push('add chain=input action=accept connection-state=established,related comment="input: accept established,related"');
+      L.push('add chain=input action=drop connection-state=invalid comment="input: drop invalid"');
+      L.push('add chain=input action=accept protocol=icmp comment="input: accept ICMP"');
+      L.push('add chain=input action=accept in-interface-list=LAN comment="input: accept dari LAN"');
+      L.push('add chain=input action=drop in-interface-list=!LAN comment="input: drop selain dari LAN"');
+      L.push('add chain=forward action=accept connection-state=established,related comment="forward: accept established,related"');
+      L.push('add chain=forward action=drop connection-state=invalid comment="forward: drop invalid"');
+      L.push('add chain=forward action=drop connection-state=new connection-nat-state=!dstnat in-interface-list=WAN comment="forward: drop WAN ke LAN (kecuali port forward)"');
+    } else if (dnsSelf) {
+      L.push('# --- Tutup DNS router dari WAN (tanpa ini jadi open resolver) ---');
+      L.push('/ip firewall filter');
+      L.push('add chain=input action=drop protocol=udp dst-port=53 in-interface-list=WAN comment="drop DNS dari WAN"');
+      L.push('add chain=input action=drop protocol=tcp dst-port=53 in-interface-list=WAN comment="drop DNS dari WAN"');
+    }
+    L.push('');
+    L.push('# Cek setelah ditempel:');
+    L.push('#   /ping 8.8.8.8          (jalur internet)');
+    L.push('#   /ping google.com       (DNS)');
+    L.push('#   /ip firewall nat print (NAT aktif)');
+
+    out.textContent = L.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd();
+
+    const wanLabel = type === 'dhcp' ? 'DHCP' : type === 'static' ? 'IP statis ' + wanAddr.ip : 'PPPoE';
+    sum.textContent = `Internet ⇄ ${wan} (${wanLabel}) ⇄ router ⇄ ${lan} (${rip}/${p.cidr})` + (useDhcp ? ` · DHCP ${ranges.replace(/,/g, ', ')}` : '');
+    sum.hidden = false;
+    warn.textContent = warns.join('\n');
+    warn.hidden = !warns.length;
   }
-  $$('#p-ros input').forEach(i => i.addEventListener('input', renderRos));
+  $$('#p-ros input, #p-ros select').forEach(i => { i.addEventListener('input', renderRos); i.addEventListener('change', renderRos); });
   renderRos();
 
-  /* --- PSU estimator --- */
-  function renderPsu() {
-    const n = id => Math.max(0, Number($('#' + id).value) || 0);
-    const load = 50 + n('psu-cpu') + n('psu-gpu') + n('psu-ram') * 5 + n('psu-drv') * 8 + n('psu-fan') * 3;
-    const rec = Math.ceil((load * 1.4) / 50) * 50;
-    $('#psu-load').textContent = load + ' W';
-    $('#psu-rec').textContent = rec + ' W';
-  }
-  $$('#p-psu input').forEach(i => i.addEventListener('input', renderPsu));
-  renderPsu();
+  /* --- Password generator (multi-mode) ---
+     Mode: acak, huruf, angka, dadu (kata), absurd, tgl lahir, kustom (pola), kejutan.
+     Semua dihitung di browser dengan crypto.getRandomValues. Kekuatan (bit entropi) dihitung
+     dari pilihan acak yang benar-benar dibuat. Kamus kata diambil dari tabel tool_wordlists
+     (event 'pw-wordlists'); kalau gagal dimuat, kamus bawaan di bawah dipakai. */
+  (function pwTool() {
+    const root = $('#p-pass'); if (!root) return;
+    const out = $('#pw-out'), info = $('#pw-info'), hint = $('#pw-hint'), bar = $('#pw-bar'), list = $('#pw-list'), desc = $('#pw-desc');
+    const v = id => $('#pw-' + id);
 
-  /* --- Password generator --- */
-  const SETS = { lower: 'abcdefghijklmnopqrstuvwxyz', upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', digit: '0123456789', sym: '!@#$%^&*()-_=+[]{};:,.?' };
-  function randInt(max) {
-    const a = new Uint32Array(1);
-    const lim = Math.floor(0x100000000 / max) * max;
-    do { crypto.getRandomValues(a); } while (a[0] >= lim);
-    return a[0] % max;
-  }
-  function genPassword() {
-    const len = Number($('#pw-len').value);
-    const picked = ['lower', 'upper', 'digit', 'sym'].filter(k => $('#pw-' + k).checked);
-    const out = $('#pw-out'), info = $('#pw-info'), bar = $('#pw-bar');
-    $('#pw-len-v').textContent = len;
-    if (!picked.length) { out.textContent = ''; info.textContent = 'Pilih minimal satu jenis karakter.'; bar.style.width = '0'; return; }
-    const pool = picked.map(k => SETS[k]).join('');
-    let pw = '';
-    for (let tries = 0; tries < 60; tries++) {
-      pw = Array.from({ length: len }, () => pool[randInt(pool.length)]).join('');
-      if (picked.every(k => [...SETS[k]].some(c => pw.includes(c)))) break;
+    const SETS = { lower: 'abcdefghijklmnopqrstuvwxyz', upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', digit: '0123456789', sym: '!@#$%^&*()-_=+[]{};:,.?' };
+    const AMBIG = /[0O1lI|]/g;
+    const ASYM = '!@#$%&*?+~';
+    const SEPS = '-_.,:;+=~';
+    const LEET = { a: '4', e: '3', i: '1', o: '0', s: '5', t: '7' };
+    const CONS = 'bcdfghjklmnprstvwyz', VOWELS = 'aiueo';
+    const LEVELS = ['Santai', 'Aneh', 'Absurd', 'Gila', 'Chaos'];
+    const WORD_KEYS = ['adj', 'noun', 'kata'];
+    const LABEL = { acak: 'Acak', huruf: 'Huruf', angka: 'Angka', dadu: 'Dadu', absurd: 'Absurd', tgl: 'Tgl lahir', custom: 'Kustom', kejutan: 'Kejutan' };
+    const DESC = {
+      acak: 'Campuran huruf, angka, dan simbol. Paling kuat per karakter.',
+      huruf: 'Hanya huruf. Bisa dibuat mudah diucapkan supaya gampang diingat.',
+      angka: 'Hanya angka, cocok untuk PIN. Pendek berarti lemah, jadi pakai di tempat yang membatasi percobaan.',
+      dadu: 'Dadu kata: beberapa kata acak dari kamus. Gampang diingat dan kuat kalau katanya cukup banyak.',
+      absurd: 'Kata-kata ngawur (ayam galau + bakso gemoy) dicampur angka dan simbol. Lucu tapi sulit ditebak.',
+      tgl: 'Tanggal lahir dan nama jadi kerangka, lalu dilapisi bagian acak supaya tidak mudah ditebak.',
+      custom: 'Rakit pola sendiri dengan token. Klik token di bawah untuk menyisipkannya.',
+      kejutan: 'Mode dan pengaturannya diacak setiap kali. Setiap hasil bisa beda gaya.'
+    };
+
+    /* kamus bawaan (cadangan kalau database tidak terjangkau) */
+    let W = {
+      adj: ['ajaib', 'basi', 'beku', 'berisik', 'bocor', 'borju', 'bucin', 'cerdik', 'ceria', 'digital', 'gabut', 'galak', 'galau', 'gemoy', 'gendut'],
+      noun: ['angkot', 'ayam', 'bakwan', 'bantal', 'bebek', 'buaya', 'burung', 'cilok', 'cumi', 'dinosaurus', 'domba', 'drone', 'elang', 'galon', 'gorengan'],
+      kata: ['akar', 'alpukat', 'anggrek', 'anggur', 'angin', 'apel', 'api', 'atap', 'awan', 'baja', 'bakso', 'batu', 'bawang', 'benih', 'bintang']
+    };
+    let wsrc = 'bawaan';
+    const allWords = () => [...W.adj, ...W.noun, ...W.kata];
+    window.addEventListener('pw-wordlists', e => {
+      const n = { adj: [], noun: [], kata: [] };
+      (Array.isArray(e.detail) ? e.detail : []).forEach(r => {
+        if (r && WORD_KEYS.includes(r.category) && /^[a-z]{2,24}$/.test(r.word)) n[r.category].push(r.word);
+      });
+      if (WORD_KEYS.every(k => n[k].length >= 8)) { W = n; wsrc = 'database'; run(false); }
+    });
+
+    /* ---------- acak aman & pembantu ---------- */
+    function rnd(max) {
+      if (max <= 1) return 0;
+      const a = new Uint32Array(1), lim = Math.floor(0x100000000 / max) * max;
+      do { crypto.getRandomValues(a); } while (a[0] >= lim);
+      return a[0] % max;
     }
-    out.textContent = pw;
-    const bits = Math.round(len * Math.log2(pool.length));
-    const label = bits < 50 ? 'Lemah' : bits < 70 ? 'Cukup' : bits < 100 ? 'Kuat' : 'Sangat kuat';
-    info.textContent = `${label} · ±${bits} bit entropi`;
-    bar.style.width = Math.min(100, Math.round(bits / 1.4)) + '%';
-  }
-  $$('#p-pass input').forEach(i => i.addEventListener('input', genPassword));
-  $('#pw-gen').addEventListener('click', genPassword);
-  genPassword();
+    const pick = a => a[rnd(a.length)];
+    const shuf = a => { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    const uniq = s => [...new Set(Array.from(s))].join('');
+    const clean = (s, p) => (p.amb ? s.replace(AMBIG, '') : s);
+    const log2fact = k => { let s = 0; for (let i = 2; i <= k; i++) s += Math.log2(i); return s; };
+    const group = (s, n) => {
+      if (!n) return s;
+      const a = Array.from(s), r = [];
+      for (let i = 0; i < a.length; i += n) r.push(a.slice(i, i + n).join(''));
+      return r.join('-');
+    };
+
+    /* konteks generator: setiap pilihan acak ikut dihitung ke entropi */
+    function ctx() {
+      let bits = 0;
+      const c = {
+        get bits() { return bits; },
+        add(b) { bits += b; },
+        int(n) { if (n <= 1) return 0; bits += Math.log2(n); return rnd(n); },
+        pick(a) { return a[c.int(a.length)]; },
+        chars(set, n) { const a = Array.from(set); let s = ''; for (let i = 0; i < n; i++) s += c.pick(a); return s; },
+        leet(s) { return Array.from(s).map(ch => { const k = LEET[ch.toLowerCase()]; return k && c.int(2) ? k : ch; }).join(''); },
+        caseMix(s) { return Array.from(s).map(ch => (ch.toLowerCase() !== ch.toUpperCase() && c.int(2) ? ch.toUpperCase() : ch.toLowerCase())).join(''); }
+      };
+      return c;
+    }
+
+    /* ---------- generator per mode ---------- */
+    function gAcak(p) {
+      const sets = ['lower', 'upper', 'digit', 'sym'].filter(k => p[k]).map(k => clean(SETS[k], p)).filter(Boolean);
+      const extra = uniq(clean(p.extra, p).replace(/\s/g, ''));
+      const A = Array.from(uniq(sets.join('') + extra));
+      if (!A.length) return { err: 'Pilih minimal satu jenis karakter.' };
+      const L = Array.from(uniq(clean((p.lower ? SETS.lower : '') + (p.upper ? SETS.upper : ''), p)));
+      const useStart = p.start && L.length > 0;
+      const noRep = p.noRep && A.length > 2;
+      const must = sets.slice(0, p.len);
+      for (let t = 0; t < 400; t++) {
+        const o = new Array(p.len).fill(null);
+        const pos = shuf(Array.from(o.keys()));
+        const forced = new Set();
+        must.forEach((s, i) => { o[pos[i]] = pick(Array.from(s)); forced.add(pos[i]); });
+        for (let i = 0; i < p.len; i++) if (o[i] === null) o[i] = pick(A);
+        if (useStart && !L.includes(o[0])) { if (forced.has(0)) continue; o[0] = pick(L); }
+        if (noRep) {
+          for (let pass = 0; pass < 6; pass++) {
+            let bad = false;
+            for (let i = 1; i < p.len; i++) {
+              if (o[i] !== o[i - 1]) continue;
+              const j = !forced.has(i) ? i : !forced.has(i - 1) ? i - 1 : -1;
+              if (j < 0) { bad = true; continue; }
+              const src = j === 0 && useStart ? L : A;
+              let c, n = 0;
+              do { c = pick(src); } while ((c === o[j - 1] || c === o[j + 1]) && ++n < 40);
+              o[j] = c;
+            }
+            if (!bad) break;
+          }
+          if (o.some((c, i) => i && c === o[i - 1])) continue;
+        }
+        const first = useStart ? L.length : A.length;
+        const bits = Math.log2(first) + (p.len - 1) * Math.log2(noRep ? A.length - 1 : A.length);
+        return { pw: o.join(''), bits };
+      }
+      return { err: 'Aturannya terlalu ketat untuk panjang ini. Coba longgarkan.' };
+    }
+
+    function gHuruf(p) {
+      if (!p.lower && !p.upper) return { err: 'Pilih huruf besar atau huruf kecil.' };
+      const g = ctx();
+      if (p.pron) {
+        const cs = Array.from(clean(CONS, p)), vs = Array.from(VOWELS);
+        let s = '';
+        for (let i = 0, n = Math.ceil(p.len / 2); i < n; i++) {
+          let syl = g.pick(cs) + g.pick(vs);
+          if (p.lower && p.upper) { if (g.int(2)) syl = cap(syl); } else if (p.upper) syl = syl.toUpperCase();
+          s += syl;
+        }
+        const bits = g.bits * p.len / s.length;
+        return { pw: group(s.slice(0, p.len), p.grp), bits };
+      }
+      const pool = uniq(clean((p.lower ? SETS.lower : '') + (p.upper ? SETS.upper : ''), p));
+      return { pw: group(g.chars(pool, p.len), p.grp), bits: g.bits };
+    }
+
+    function gAngka(p) {
+      const runs = s => {
+        for (let i = 0; i + 2 < s.length; i++) {
+          const a = +s[i], b = +s[i + 1], c = +s[i + 2];
+          if ((b - a === 1 && c - b === 1) || (b - a === -1 && c - b === -1)) return true;
+        }
+        return false;
+      };
+      let s = '';
+      for (let t = 0; t < 500; t++) {
+        s = Array.from({ length: p.len }, () => rnd(10)).join('');
+        if (!p.noSeq || (!/(\d)\1\1/.test(s) && !runs(s))) break;
+      }
+      return { pw: group(s, p.grp), bits: p.len * Math.log2(10) };
+    }
+
+    function gDadu(p) {
+      const pool = allWords();
+      if (!pool.length) return { err: 'Kamus kata kosong.' };
+      const g = ctx();
+      let parts = Array.from({ length: p.words }, () => g.pick(pool));
+      parts = parts.map(w => (p.cap === 'first' ? cap(w) : p.cap === 'upper' ? w.toUpperCase() : p.cap === 'mix' ? g.caseMix(w) : w));
+      if (p.leet) parts = parts.map(w => g.leet(w));
+      if (p.dnum) { const i = g.int(parts.length); parts[i] += g.chars(SETS.digit, 3); }
+      if (p.dsym) { const i = g.int(parts.length), s = g.pick(Array.from(ASYM)); parts[i] = g.int(2) ? s + parts[i] : parts[i] + s; }
+      let pw = parts[0];
+      for (let i = 1; i < parts.length; i++) pw += (p.sep === 'rand' ? g.pick(Array.from(SEPS)) : p.sep) + parts[i];
+      return { pw, bits: g.bits };
+    }
+
+    function gAbsurd(p) {
+      const L = p.abs, g = ctx(), n = L + 1;
+      const cats = ['adj', 'noun'];
+      while (cats.length < n) cats.push(g.pick(['adj', 'noun', 'kata']));
+      let items = cats.map(c => cap(g.pick(W[c])));
+      if (L >= 4) items = items.map(w => g.leet(w));
+      if (L >= 5) items = items.map(w => g.caseMix(w));
+      if (L >= 2) { items.push(g.chars(SETS.digit, L)); items.push(g.chars(ASYM, L >= 4 ? 2 : 1)); }
+      g.add(log2fact(items.length));
+      shuf(items);
+      return { pw: items.join(g.pick(['', '-', '_', '.'])), bits: g.bits };
+    }
+
+    function gTgl(p) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(p.dob || '');
+      const name = (p.name || '').replace(/[^A-Za-z]/g, '').slice(0, 20);
+      if (!m && !name) return { err: 'Isi tanggal lahir atau nama dulu.' };
+      const g = ctx();
+      let date = '';
+      if (m) {
+        const y = m[1], mo = m[2], d = m[3];
+        date = pick([d + mo + y, d + mo + y.slice(2), y + mo + d, d + mo, mo + d + y.slice(2)]);
+      }
+      let nm = name ? cap(name.toLowerCase()) : '';
+      if (nm && p.leet) nm = g.leet(nm);
+      const randLen = Math.max(8, p.len - nm.length - date.length - 1);
+      const rand = g.chars(uniq(clean(SETS.lower + SETS.upper + SETS.digit, { amb: true })), randLen);
+      const sym = g.pick(Array.from(ASYM));
+      const pw = shuf([nm, date, rand, sym].filter(Boolean)).join('');
+      return { pw, bits: g.bits, note: 'Tanggal lahir dan nama dianggap sudah diketahui penyerang, jadi kekuatan hanya dihitung dari bagian acaknya.' };
+    }
+
+    function gKustom(p) {
+      const tpl = (p.tpl || '').slice(0, 120);
+      if (!tpl.trim()) return { err: 'Tulis polanya dulu, contoh: {Adj}-{Noun}-{d3}{s}' };
+      const g = ctx(), bad = [];
+      const custom = Array.from(uniq((p.extra || '').replace(/\s/g, '')));
+      const CH = { l: SETS.lower, u: SETS.upper, d: SETS.digit, s: ASYM, x: uniq(SETS.lower + SETS.upper + SETS.digit + SETS.sym) };
+      let pw = tpl.replace(/\{([A-Za-z]+)(\d{0,2})\}/g, (all, name, num) => {
+        const n = Math.min(64, Math.max(1, +num || 1)), low = name.toLowerCase();
+        if (WORD_KEYS.includes(low)) {
+          let s = '';
+          for (let i = 0; i < n; i++) {
+            const w = g.pick(W[low]);
+            s += name.length > 1 && name === name.toUpperCase() ? w.toUpperCase() : name[0] === name[0].toUpperCase() ? cap(w) : w;
+          }
+          return s;
+        }
+        if (name === 'c') {
+          if (!custom.length) { bad.push('{c} butuh kolom karakter kustom diisi'); return ''; }
+          return g.chars(custom.join(''), n);
+        }
+        if (Object.prototype.hasOwnProperty.call(CH, name)) return g.chars(CH[name], n);
+        bad.push(all);
+        return all;
+      });
+      pw = Array.from(pw).slice(0, 160).join('');
+      let note = '';
+      if (bad.length) note = 'Perlu dicek: ' + [...new Set(bad)].join(', ') + '.';
+      else if (!g.bits) note = 'Pola ini belum memakai token acak.';
+      return { pw, bits: g.bits, note };
+    }
+
+    function gKejutan(p) {
+      const m = pick(['acak', 'huruf', 'angka', 'dadu', 'absurd']);
+      const q = Object.assign({}, p);
+      if (m === 'acak') Object.assign(q, { len: 16 + rnd(17), lower: true, upper: true, digit: true, sym: rnd(4) > 0, amb: rnd(2) === 1, start: false, noRep: true, extra: '' });
+      if (m === 'huruf') Object.assign(q, { len: 18 + rnd(11), lower: true, upper: true, pron: rnd(2) === 1, grp: rnd(2) ? 4 : 0, amb: false });
+      if (m === 'angka') Object.assign(q, { len: 16 + rnd(9), grp: rnd(2) ? 4 : 0, noSeq: true });
+      if (m === 'dadu') Object.assign(q, { words: 5 + rnd(3), sep: pick(['-', '.', '_', ' ', 'rand']), cap: pick(['first', 'mix', 'lower']), dnum: true, dsym: true, leet: rnd(2) === 1 });
+      if (m === 'absurd') Object.assign(q, { abs: 3 + rnd(3) });
+      const r = GEN[m](q);
+      r.mode = m;
+      return r;
+    }
+    const GEN = { acak: gAcak, huruf: gHuruf, angka: gAngka, dadu: gDadu, absurd: gAbsurd, tgl: gTgl, custom: gKustom, kejutan: gKejutan };
+
+    /* ---------- tampilan ---------- */
+    let mode = 'acak', results = [], sel = 0, lastP = null, rollT;
+
+    const P = () => ({
+      len: +v('len').value, lower: v('lower').checked, upper: v('upper').checked, digit: v('digit').checked, sym: v('sym').checked,
+      amb: v('amb').checked, start: v('start').checked, noRep: v('norep').checked, extra: v('extra').value,
+      pron: v('pron').checked, grp: +v('grp').value, noSeq: v('noseq').checked,
+      words: +v('words').value, sep: v('sep').value, cap: v('cap').value, dnum: v('dnum').checked, dsym: v('dsym').checked, leet: v('leet').checked,
+      abs: +v('abs').value, dob: v('dob').value, name: v('name').value, tpl: v('tpl').value, count: +v('count').value
+    });
+
+    function crack(bits) {
+      const s = Math.pow(2, bits) / 2 / 1e10;           // rata-rata, 10 miliar tebakan per detik
+      const f = n => Math.round(n).toLocaleString('id-ID');
+      if (s < 1) return 'jebol seketika';
+      if (s < 60) return 'jebol ±' + f(s) + ' detik';
+      if (s < 3600) return 'jebol ±' + f(s / 60) + ' menit';
+      if (s < 86400) return 'jebol ±' + f(s / 3600) + ' jam';
+      const y = s / 86400 / 365;
+      if (y < 1) return 'jebol ±' + f(s / 86400) + ' hari';
+      if (y >= 1.4e10) return 'melebihi umur alam semesta';
+      if (y < 1e3) return 'jebol ±' + f(y) + ' tahun';
+      if (y < 1e6) return 'jebol ±' + f(y / 1e3) + ' ribu tahun';
+      if (y < 1e9) return 'jebol ±' + f(y / 1e6) + ' juta tahun';
+      return 'jebol ±' + f(y / 1e9) + ' miliar tahun';
+    }
+
+    function tip(r, p) {
+      if (r.bits >= 70 || mode === 'kejutan') return '';
+      switch (mode) {
+        case 'dadu': return 'Tambah ±' + Math.ceil((70 - r.bits) / Math.log2(allWords().length || 2)) + ' kata lagi supaya masuk kategori kuat.';
+        case 'absurd': return p.abs < 5 ? 'Naikkan level absurd supaya lebih kuat.' : 'Kamus kata yang lebih besar akan menambah kekuatan.';
+        case 'angka': return 'PIN angka cepat ditebak kalau percobaannya tidak dibatasi. Tambah panjang, atau pakai mode lain.';
+        case 'custom': return 'Tambah token acak ke pola, misalnya {x6} atau {Noun}.';
+        default: {
+          const per = r.bits / Math.max(1, p.len);
+          return per > 0 ? 'Perpanjang sampai ±' + Math.ceil(p.len + (70 - r.bits) / per) + ' karakter supaya masuk kategori kuat.' : '';
+        }
+      }
+    }
+
+    function paintMain() {
+      const r = results[sel], bits = Math.round(r.bits);
+      out.textContent = r.pw;
+      const label = bits < 50 ? 'Lemah' : bits < 70 ? 'Cukup' : bits < 100 ? 'Kuat' : 'Sangat kuat';
+      info.textContent = label + ' · ±' + bits + ' bit · ' + crack(r.bits) + (r.mode ? ' · ' + LABEL[r.mode] : '');
+      const h = [];
+      if (r.note) h.push(r.note);
+      const t = tip(r, lastP); if (t) h.push(t);
+      if (['dadu', 'absurd', 'custom'].includes(r.mode || mode)) h.push('Kamus: ' + allWords().length + ' kata (' + wsrc + ').');
+      hint.textContent = h.join(' '); hint.hidden = !h.length;
+      bar.style.width = Math.min(100, Math.round(r.bits / 1.4)) + '%';
+    }
+
+    function paintList() {
+      list.textContent = '';
+      if (results.length < 2) { list.hidden = true; return; }
+      results.forEach((r, i) => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'pw-item' + (i === sel ? ' hot' : ''); b.title = 'Pakai yang ini';
+        const t = document.createElement('span'); t.textContent = r.pw;
+        const s = document.createElement('small'); s.textContent = '±' + Math.round(r.bits) + ' bit' + (r.mode ? ' · ' + LABEL[r.mode] : '');
+        b.append(t, s);
+        b.addEventListener('click', () => {
+          sel = i; paintMain();
+          $$('.pw-item', list).forEach((x, j) => x.classList.toggle('hot', j === i));
+        });
+        list.append(b);
+      });
+      list.hidden = false;
+    }
+
+    function fail(msg) {
+      results = []; out.textContent = ''; info.textContent = msg; hint.hidden = true; bar.style.width = '0'; list.hidden = true;
+    }
+
+    function run(anim) {
+      const p = P(); lastP = p;
+      v('len-v').textContent = p.len; v('words-v').textContent = p.words;
+      v('abs-v').textContent = LEVELS[p.abs - 1] || ''; v('count-v').textContent = p.count;
+      const res = [];
+      for (let i = 0; i < p.count; i++) {
+        const r = GEN[mode](p);
+        if (r.err) return fail(r.err);
+        res.push(r);
+      }
+      results = res; sel = 0;
+      paintMain(); paintList();
+      if (anim) {
+        const b = v('gen');
+        b.classList.remove('rolling'); out.classList.remove('flash'); void out.offsetWidth;
+        b.classList.add('rolling'); out.classList.add('flash');
+        clearTimeout(rollT); rollT = setTimeout(() => b.classList.remove('rolling'), 700);
+      }
+    }
+
+    function applyMode() {
+      $$('[data-m]', root).forEach(e => { e.hidden = !e.dataset.m.split(' ').includes(mode); });
+      $$('#pw-modes .chip').forEach(b => {
+        const on = b.dataset.mode === mode;
+        b.classList.toggle('hot', on); b.setAttribute('aria-pressed', String(on));
+      });
+      desc.textContent = DESC[mode];
+    }
+
+    /* ingat pengaturan (tanpa tanggal lahir, nama, dan karakter kustom) */
+    const KEEP = ['len', 'lower', 'upper', 'digit', 'sym', 'amb', 'start', 'norep', 'pron', 'grp', 'noseq', 'words', 'sep', 'cap', 'dnum', 'dsym', 'leet', 'abs', 'tpl', 'count'];
+    function save() {
+      try {
+        const o = { mode };
+        KEEP.forEach(id => { const e = v(id); o[id] = e.type === 'checkbox' ? e.checked : e.value; });
+        localStorage.setItem('yh:pw', JSON.stringify(o));
+      } catch { /* abaikan */ }
+    }
+    function load() {
+      try {
+        const o = JSON.parse(localStorage.getItem('yh:pw') || 'null');
+        if (!o || typeof o !== 'object') return;
+        if (Object.prototype.hasOwnProperty.call(LABEL, o.mode)) mode = o.mode;
+        KEEP.forEach(id => {
+          if (!(id in o)) return;
+          const e = v(id);
+          if (e.type === 'checkbox') e.checked = !!o[id]; else e.value = String(o[id]);
+        });
+      } catch { /* abaikan */ }
+    }
+
+    root.addEventListener('input', e => { if (e.target.matches('input')) { save(); run(false); } });
+    root.addEventListener('change', e => { if (e.target.matches('select')) { save(); run(false); } });
+    $('#pw-modes').addEventListener('click', e => {
+      const b = e.target.closest('[data-mode]'); if (!b) return;
+      mode = b.dataset.mode; applyMode(); save(); run(false);
+    });
+    $('#pw-toks').addEventListener('click', e => {
+      const b = e.target.closest('[data-tok]'); if (!b) return;
+      const t = v('tpl'), tok = b.dataset.tok;
+      const s = t.selectionStart == null ? t.value.length : t.selectionStart;
+      const en = t.selectionEnd == null ? s : t.selectionEnd;
+      t.value = t.value.slice(0, s) + tok + t.value.slice(en);
+      const pos = s + tok.length;
+      t.focus(); t.setSelectionRange(pos, pos);
+      t.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    v('gen').addEventListener('click', () => run(true));
+
+    load(); applyMode(); run(false);
+  })();
 
 
   /* =====================================================================
@@ -1494,9 +2689,10 @@ textarea:focus, select:focus { outline: none; border-color: var(--accent); box-s
   const SB_KEY = 'sb_publishable_tcbQ_lo6ZRD4WXaK7OY8sA_4DLT-Drw';
   if (!window.supabase) return;
   const sb = window.supabase.createClient(SB_URL, SB_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' }
   });
 
+  window.__sb = sb;
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -1615,6 +2811,25 @@ textarea:focus, select:focus { outline: none; border-color: var(--accent); box-s
     });
   }
 
+  /* ---------- preset Subnet Calculator (tab Tools) ---------- */
+  async function loadSubnetPresets() {
+    const { data, error } = await sb.from('tool_subnet_presets').select('label,value,note').order('sort').order('created_at');
+    if (error || !data || !data.length) return;
+    window.dispatchEvent(new CustomEvent('subnet-presets', { detail: data }));
+  }
+
+  /* ---------- kamus kata Password Generator (tab Tools) ---------- */
+  async function loadWordlists() {
+    const rows = [];
+    for (let from = 0; from < 20000; from += 1000) {
+      const { data, error } = await sb.from('tool_wordlists').select('category,word').order('id').range(from, from + 999);
+      if (error || !data) break;
+      rows.push(...data);
+      if (data.length < 1000) break;
+    }
+    if (rows.length) window.dispatchEvent(new CustomEvent('pw-wordlists', { detail: rows }));
+  }
+
   /* ---------- donasi (live) ---------- */
   const donRow = r => {
     const row = el('div', 'glass don-row');
@@ -1679,9 +2894,338 @@ textarea:focus, select:focus { outline: none; border-color: var(--accent); box-s
   }
 
   bindReport();
-  Promise.allSettled([loadSettings(), loadStories(), loadMaps(), loadPartners(), loadFaqs(), loadDonations()])
+  Promise.allSettled([loadSettings(), loadStories(), loadMaps(), loadPartners(), loadFaqs(), loadDonations(), loadSubnetPresets(), loadWordlists()])
     .then(live);
 })();
   </script>
+<script>
+/* =====================================================================
+   AKUN · ADMIN · PSU PINTAR
+   Keamanan sebenarnya ada di RLS database; UI hanya menyembunyikan menu.
+   ===================================================================== */
+(() => {
+  'use strict';
+  const sb = window.__sb; if (!sb) return;
+  const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const rp = n => 'Rp ' + Math.round(n).toLocaleString('id-ID');
+  const day = d => d ? new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'belum';
+  const ok = r => { if (r.error) throw r.error; return r.data; };
+  const toast = m => { const t = $('#toast'); if (!t) return; t.textContent = m; t.hidden = false; t.style.animation = 'none'; void t.offsetWidth; t.style.animation = ''; clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, 3600); };
+  let me = null, prof = null, mode = 'in';
+
+  /* ---------- sesi & peran ---------- */
+  async function loadProfile() {
+    const { data: { session } } = await sb.auth.getSession();
+    me = session ? session.user : null; prof = null;
+    if (me) { const r = await sb.from('profiles').select('*').eq('id', me.id).maybeSingle(); prof = r.data; }
+    $('#nav-akun-t').textContent = me ? (prof && prof.display_name) || 'Akun' : 'Masuk';
+    $('#nav-admin').hidden = !(prof && prof.role === 'admin');
+    renderAkun(); renderBuilds(); onHash();
+  }
+  function onHash() { if (location.hash === '#admin') adminInit(); }
+  window.addEventListener('hashchange', onHash);
+  sb.auth.onAuthStateChange(() => setTimeout(loadProfile, 0));
+
+  /* ---------- halaman Akun ---------- */
+  async function renderAkun() {
+    const box = $('#akun-body');
+    if (!me) {
+      box.innerHTML = `<div class="chips"><button class="chip ${mode === 'in' ? 'hot' : ''}" data-m="in" type="button">Masuk</button><button class="chip ${mode === 'up' ? 'hot' : ''}" data-m="up" type="button">Daftar</button></div>
+        <div class="form-grid"><label class="field" for="au-em"><span>Email</span><input id="au-em" type="email" autocomplete="email"></label>
+        <label class="field" for="au-pw"><span>Password (min. 8 karakter)</span><input id="au-pw" type="password" autocomplete="${mode === 'in' ? 'current-password' : 'new-password'}"></label></div>
+        <p class="err" id="au-err" role="alert" hidden></p>
+        <div class="row"><button class="btn primary" id="au-go" type="button">${mode === 'in' ? 'Masuk' : 'Buat akun'}</button></div>
+        <p class="note">Akun biasa: simpan build PSU dan kirim laporan atas namamu. Fitur admin hanya muncul untuk akun yang diberi peran admin.</p>`;
+      $$('[data-m]', box).forEach(b => b.onclick = () => { mode = b.dataset.m; renderAkun(); });
+      $('#au-go').onclick = async () => {
+        const email = $('#au-em').value.trim(), password = $('#au-pw').value, err = $('#au-err');
+        err.hidden = true;
+        if (!email || password.length < 8) { err.textContent = 'Isi email dan password minimal 8 karakter.'; err.hidden = false; return; }
+        $('#au-go').disabled = true;
+        const r = mode === 'in' ? await sb.auth.signInWithPassword({ email, password })
+          : await sb.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + location.pathname } });
+        $('#au-go').disabled = false;
+        if (r.error) { err.textContent = r.error.message; err.hidden = false; return; }
+        if (mode === 'up' && !r.data.session) { toast('Cek emailmu untuk konfirmasi, lalu masuk.'); mode = 'in'; renderAkun(); }
+      };
+      return;
+    }
+    const adm = prof && prof.role === 'admin';
+    let reps = []; try { reps = ok(await sb.from('reports').select('subject,category,status,created_at').eq('user_id', me.id).order('created_at', { ascending: false }).limit(10)); } catch { }
+    box.innerHTML = `<p><span class="role-badge ${adm ? 'admin' : ''}">${adm ? 'Admin' : 'User'}</span> <small class="mono">${esc(me.email)}</small></p>
+      <div class="form-grid"><label class="field" for="pf-dn"><span>Nama tampilan</span><input id="pf-dn" type="text" maxlength="40" value="${esc(prof && prof.display_name)}"></label>
+      <label class="field" for="pf-un"><span>Username</span><input id="pf-un" type="text" maxlength="30" value="${esc(prof && prof.username)}"></label>
+      <label class="field wide" for="pf-bio"><span>Bio</span><textarea id="pf-bio" rows="2" maxlength="200">${esc(prof && prof.bio)}</textarea></label></div>
+      <div class="row"><button class="btn primary" id="pf-save" type="button">Simpan profil</button>${adm ? '<a class="btn" href="#admin" data-silent>Buka panel admin</a>' : ''}<button class="btn" id="pf-out" type="button">Keluar</button></div>
+      <p class="note">${adm ? 'Kamu admin: bisa mengelola pengguna, laporan, konten, katalog PSU, dan melihat audit.' : 'Kamu user biasa: bisa mengubah profilmu, menyimpan build PSU, dan melihat laporanmu sendiri. Pengaturan situs hanya untuk admin.'}</p>
+      <h3>Laporanmu</h3>${reps.length ? reps.map(r => `<div class="glass don-row"><div><strong>${esc(r.subject || r.category)}</strong><small>${day(r.created_at)}</small></div><span class="chip">${esc(r.status)}</span></div>`).join('') : '<p class="note">Belum ada laporan yang terhubung ke akunmu.</p>'}`;
+    $('#pf-save').onclick = async () => {
+      const r = await sb.from('profiles').update({ display_name: $('#pf-dn').value.trim().slice(0, 40), username: $('#pf-un').value.trim().slice(0, 30), bio: $('#pf-bio').value.trim().slice(0, 200) }).eq('id', me.id);
+      toast(r.error ? 'Gagal menyimpan profil' : 'Profil disimpan'); if (!r.error) loadProfile();
+    };
+    $('#pf-out').onclick = () => sb.auth.signOut();
+  }
+
+  /* ---------- PSU pintar ---------- */
+  const USE = { office: { f: .35, h: 8 }, gaming: { f: .7, h: 4 }, kreator: { f: .85, h: 6 } };
+  const SIZES = [350, 450, 550, 650, 750, 850, 1000, 1200, 1300, 1600];
+  let use = 'office', last = null;
+  const v = id => Math.max(0, Number($('#' + id).value) || 0);
+  function calcPsu() {
+    const oc = $('#psu-oc').checked, g = v('psu-gpu');
+    const peak = Math.round(v('psu-cpu') * (oc ? 1.3 : 1.15) + g * (oc ? 1.15 : 1) + 40 + v('psu-ram') * 5 + v('psu-drv') * 8 + v('psu-fan') * 3);
+    const need = Math.max(peak / .75, peak + g * .4);
+    const rec = SIZES.find(s => s >= need) || Math.ceil(need / 100) * 100;
+    const pct = Math.round(peak / rec * 100);
+    const eff = peak < 400 ? '80+ Bronze' : peak < 800 ? '80+ Gold' : '80+ Platinum';
+    const kwh = peak * USE[use].f / 1000 * v('psu-hrs') * 30, cost = kwh * v('psu-tar');
+    const conn = g === 0 ? 'tanpa GPU diskrit, tidak perlu kabel PCIe' : g <= 75 ? 'cukup dari slot PCIe' : g <= 225 ? 'minimal 1 kabel PCIe 8-pin' : g <= 375 ? 'minimal 2 kabel PCIe 8-pin' : 'konektor 12V-2x6 (PSU ATX 3.x) atau 3 kabel 8-pin';
+    $('#psu-load').textContent = peak + ' W'; $('#psu-rec').textContent = rec + ' W';
+    $('#psu-eff').textContent = eff; $('#psu-cost').textContent = rp(cost);
+    const bar = $('#psu-bar'); bar.style.width = Math.min(100, pct) + '%'; bar.className = pct > 85 ? 'bad' : pct > 70 ? 'warn' : '';
+    $('#psu-verdict').textContent = `Beban puncak sekitar ${peak} W. Dengan PSU ${rec} W, beban puncak berada di ${pct}% kapasitas: ` +
+      (pct < 30 ? 'sangat longgar. Aman untuk upgrade, tapi efisiensi sedikit turun di beban ringan, jadi PSU satu tingkat lebih kecil juga masuk akal kalau tidak berencana upgrade.'
+        : pct <= 70 ? 'zona ideal (40 sampai 70%), adem, efisien, dan ada ruang upgrade.'
+          : 'sudah mendekati batas. Naikkan satu tingkat supaya tidak bekerja keras terus.');
+    const tips = [`Kebutuhan kabel GPU: ${conn}.`, `Pemakaian ${$('#psu-use .hot').textContent.toLowerCase()} ${v('psu-hrs')} jam/hari memakai sekitar ${kwh.toFixed(1)} kWh per bulan.`];
+    if (g >= 200) tips.push('GPU sekelas ini bisa melonjak sesaat di atas TBP. Pilih PSU bagus (ATX 3.0/3.1 lebih baik) dan jangan memakai PSU tanpa merek.');
+    if (oc) tips.push('Overclock menambah panas dan konsumsi daya. Pastikan pendinginan CPU/GPU dan aliran udara casing memadai.');
+    if (v('psu-cpu') + g === 0) tips.push('CPU dan GPU masih 0 W. Pilih komponen dari daftar atau isi manual.');
+    $('#psu-tips').innerHTML = tips.map(t => `<li>${esc(t)}</li>`).join('');
+    last = { cpu: v('psu-cpu'), gpu: g, ram: v('psu-ram'), drv: v('psu-drv'), fan: v('psu-fan'), hrs: v('psu-hrs'), tar: v('psu-tar'), oc, use, peak, rec };
+  }
+  $$('#p-psu input').forEach(i => ['input', 'change'].forEach(e => i.addEventListener(e, calcPsu)));
+  $$('#psu-use .chip').forEach(b => b.onclick = () => {
+    use = b.dataset.u; $$('#psu-use .chip').forEach(x => x.classList.toggle('hot', x === b));
+    $('#psu-hrs').value = USE[use].h; calcPsu();
+  });
+  [['cpus', 'cpu'], ['gpus', 'gpu']].forEach(([s, i]) => {
+    $('#psu-' + s).onchange = e => { if (e.target.value) { $('#psu-' + i).value = e.target.value; calcPsu(); } };
+    $('#psu-' + i).addEventListener('input', () => { $('#psu-' + s).value = ''; });
+  });
+  async function loadParts() {
+    const r = await sb.from('psu_parts').select('kind,name,watt').order('watt');
+    if (r.error || !r.data) return;
+    r.data.forEach(p => { const o = document.createElement('option'); o.value = p.watt; o.textContent = `${p.name} · ${p.watt} W`; $('#psu-' + p.kind + 's').append(o); });
+  }
+  async function renderBuilds() {
+    const box = $('#psu-saved'), sv = $('#psu-save'), nm = $('#psu-name');
+    sv.disabled = nm.disabled = !me;
+    if (!me) { box.innerHTML = '<p class="note">Masuk lewat menu Akun untuk menyimpan build-mu.</p>'; return; }
+    let rows = []; try { rows = ok(await sb.from('psu_builds').select('*').eq('user_id', me.id).order('created_at', { ascending: false })); } catch { }
+    box.innerHTML = rows.length ? rows.map(r => `<div class="glass don-row"><div><strong>${esc(r.name)}</strong><small>${r.load_w} W puncak, PSU ${r.rec_w} W</small></div><div class="row"><button class="btn small" data-l="${r.id}" type="button">Muat</button><button class="btn small" data-d="${r.id}" type="button">Hapus</button></div></div>`).join('') : '<p class="note">Belum ada build tersimpan.</p>';
+    $$('[data-l]', box).forEach(b => b.onclick = () => {
+      const c = rows.find(r => r.id === b.dataset.l).config || {};
+      ['cpu', 'gpu', 'ram', 'drv', 'fan', 'hrs', 'tar'].forEach(k => { if (c[k] != null) $('#psu-' + k).value = c[k]; });
+      $('#psu-oc').checked = !!c.oc; if (USE[c.use]) { use = c.use; $$('#psu-use .chip').forEach(x => x.classList.toggle('hot', x.dataset.u === use)); }
+      calcPsu(); toast('Build dimuat');
+    });
+    $$('[data-d]', box).forEach(b => b.onclick = async () => { const r = await sb.from('psu_builds').delete().eq('id', b.dataset.d); toast(r.error ? 'Gagal menghapus' : 'Build dihapus'); renderBuilds(); });
+  }
+  $('#psu-save').onclick = async () => {
+    const name = $('#psu-name').value.trim(); if (!name) return toast('Beri nama build dulu');
+    calcPsu();
+    const r = await sb.from('psu_builds').insert({ name, config: last, load_w: last.peak, rec_w: last.rec });
+    toast(r.error ? r.error.message : 'Build tersimpan'); if (!r.error) { $('#psu-name').value = ''; renderBuilds(); }
+  };
+
+  /* ---------- Panel admin ---------- */
+  const NUM = new Set(['sort', 'amount', 'watt', 'price']), LONG = new Set(['answer', 'body', 'message', 'description']);
+  const ENUM = { kind: { psu_parts: ['cpu', 'gpu'], notifications: ['info', 'event', 'update', 'warning'] }, platform: { donations: ['manual', 'saweria', 'sociabuzz'] } };
+  const CFG = {
+    psu_parts: ['Katalog PSU', ['kind', 'name', 'watt', 'note']], faqs: ['FAQ', ['question', 'answer', 'sort']],
+    community_stories: ['Cerita komunitas', ['icon', 'title', 'body', 'sort']], roblox_maps: ['Map Roblox', ['name', 'description', 'place_url', 'image_url', 'sort']],
+    partners: ['Partner', ['name', 'description', 'logo_url', 'link_url', 'sort']], notifications: ['Notifikasi live', ['title', 'body', 'kind']],
+    donations: ['Donasi manual', ['platform', 'donor_name', 'message', 'amount']], tool_subnet_presets: ['Preset subnet', ['label', 'value', 'note', 'sort']],
+    shop_items: ['Toko', ['name', 'description', 'price', 'link_url', 'active', 'sort']], site_settings: ['Pengaturan situs', []]
+  };
+  const SEC = { ringkas: 'Ringkasan', user: 'Pengguna', lapor: 'Laporan', konten: 'Konten', audit: 'Audit' };
+  let sec = 'ringkas', tbl = 'psu_parts';
+
+  async function adminInit() {
+    const box = $('#adm-body');
+    if (!(prof && prof.role === 'admin')) { box.innerHTML = '<p class="note">Halaman ini khusus admin. Masuk dengan akun admin untuk membukanya.</p>'; return; }
+    box.innerHTML = `<div class="chips" id="adm-nav">${Object.entries(SEC).map(([k, t]) => `<button class="chip ${k === sec ? 'hot' : ''}" data-s="${k}" type="button">${t}</button>`).join('')}</div><div id="adm-main"></div>`;
+    $$('#adm-nav .chip').forEach(b => b.onclick = () => { sec = b.dataset.s; adminInit(); });
+    const m = $('#adm-main'); m.textContent = 'Memuat…';
+    try { await ({ ringkas: aStats, user: aUsers, lapor: aReports, konten: aContent, audit: aAudit })[sec](m); }
+    catch (e) { m.innerHTML = `<p class="err">${esc(e.message)}</p>`; }
+  }
+  async function aStats(m) {
+    const cnt = async (t, f) => { let q = sb.from(t).select('*', { count: 'exact', head: true }); if (f) q = f(q); return (await q).count || 0; };
+    const [u, ro, rt, b] = await Promise.all([cnt('profiles'), cnt('reports', q => q.eq('status', 'open')), cnt('reports'), cnt('psu_builds')]);
+    const dn = ok(await sb.from('donations').select('amount')).reduce((s, r) => s + Number(r.amount), 0);
+    m.innerHTML = `<div class="form-grid">${[['Pengguna', u], ['Laporan terbuka', ro + ' dari ' + rt], ['Build PSU tersimpan', b], ['Total donasi tercatat', rp(dn)]].map(([l, x]) => `<div class="glass card"><span class="label">${l}</span><h3>${x}</h3></div>`).join('')}</div>
+      <p class="note">Admin bisa: ubah peran pengguna, tangani laporan, kelola konten dan katalog PSU, serta melihat audit. Peran dijaga di database (RLS), bukan hanya di tampilan.</p>`;
+  }
+  async function aUsers(m) {
+    const rows = ok(await sb.rpc('admin_list_users'));
+    m.innerHTML = rows.map(r => `<div class="glass don-row"><div><strong>${esc(r.display_name || r.username)}</strong><p>${esc(r.email)}</p><small>${esc(r.role)} · login terakhir ${day(r.last_sign_in_at)}</small></div>${r.id === me.id ? '<span class="chip hot">Kamu</span>' : `<select data-u="${r.id}"><option ${r.role === 'user' ? 'selected' : ''}>user</option><option ${r.role === 'admin' ? 'selected' : ''}>admin</option></select>`}</div>`).join('') || '<p class="note">Belum ada pengguna.</p>';
+    $$('select[data-u]', m).forEach(s => s.onchange = async () => { const r = await sb.rpc('admin_set_role', { target: s.dataset.u, new_role: s.value }); toast(r.error ? r.error.message : 'Peran diperbarui'); });
+  }
+  async function aReports(m) {
+    const rows = ok(await sb.from('reports').select('*').order('created_at', { ascending: false }).limit(100));
+    m.innerHTML = rows.map(r => `<div class="glass don-row"><div><strong>${esc(r.subject || r.category)}</strong><p>${esc(r.message)}</p><small>${esc(r.category)} · ${esc(r.contact || 'tanpa kontak')} · ${day(r.created_at)}</small></div><div class="row"><select data-r="${r.id}">${['open', 'progress', 'done'].map(s => `<option ${s === r.status ? 'selected' : ''}>${s}</option>`).join('')}</select><button class="btn small" data-x="${r.id}" type="button">Hapus</button></div></div>`).join('') || '<p class="note">Belum ada laporan.</p>';
+    $$('select[data-r]', m).forEach(s => s.onchange = async () => { const r = await sb.from('reports').update({ status: s.value }).eq('id', s.dataset.r); toast(r.error ? 'Gagal' : 'Status diperbarui'); });
+    $$('[data-x]', m).forEach(b => b.onclick = async () => { if (!confirm('Hapus laporan ini?')) return; const r = await sb.from('reports').delete().eq('id', b.dataset.x); toast(r.error ? 'Gagal' : 'Dihapus'); aReports(m); });
+  }
+  async function aAudit(m) {
+    const rows = ok(await sb.from('admin_audit').select('*').order('created_at', { ascending: false }).limit(60));
+    m.innerHTML = rows.map(r => `<div class="glass don-row"><div><strong>${esc(r.action)} · ${esc(r.table_name)}</strong><small>${new Date(r.created_at).toLocaleString('id-ID')} · ${esc(String(r.actor || '').slice(0, 8))}</small></div></div>`).join('') || '<p class="note">Belum ada jejak perubahan.</p>';
+  }
+  async function aContent(m) {
+    m.innerHTML = `<label class="field" for="adm-t"><span>Tabel</span><select id="adm-t">${Object.entries(CFG).map(([k, [l]]) => `<option value="${k}" ${k === tbl ? 'selected' : ''}>${l}</option>`).join('')}</select></label><div id="adm-c"></div>`;
+    $('#adm-t').onchange = e => { tbl = e.target.value; aContent(m); };
+    await (tbl === 'site_settings' ? aSettings : aTable)($('#adm-c'));
+  }
+  async function aSettings(c) {
+    const rows = ok(await sb.from('site_settings').select('*').order('key'));
+    c.innerHTML = rows.map(r => `<label class="field wide" for="s-${esc(r.key)}"><span>${esc(r.key)}</span><textarea id="s-${esc(r.key)}" rows="6" spellcheck="false">${esc(JSON.stringify(r.value, null, 2))}</textarea></label><div class="row"><button class="btn small" data-k="${esc(r.key)}" type="button">Simpan ${esc(r.key)}</button></div>`).join('');
+    $$('[data-k]', c).forEach(b => b.onclick = async () => {
+      let val; try { val = JSON.parse($('[id="s-' + b.dataset.k + '"]').value); } catch { return toast('JSON tidak valid'); }
+      const r = await sb.from('site_settings').update({ value: val, updated_at: new Date().toISOString() }).eq('key', b.dataset.k);
+      toast(r.error ? 'Gagal menyimpan' : 'Tersimpan, muat ulang situs untuk melihatnya');
+    });
+  }
+  async function aTable(c) {
+    const fields = CFG[tbl][1], isEnum = f => ENUM[f] && ENUM[f][tbl];
+    const rows = ok(await sb.from(tbl).select('*').order('created_at', { ascending: false }).limit(200));
+    const inp = f => {
+      const id = 'f-' + f, lab = f.replace('_', ' ');
+      if (isEnum(f)) return `<label class="field" for="${id}"><span>${lab}</span><select id="${id}">${ENUM[f][tbl].map(o => `<option>${o}</option>`).join('')}</select></label>`;
+      if (f === 'active') return `<label class="check" for="${id}"><input id="${id}" type="checkbox" checked><span>aktif</span></label>`;
+      if (LONG.has(f)) return `<label class="field wide" for="${id}"><span>${lab}</span><textarea id="${id}" rows="2"></textarea></label>`;
+      return `<label class="field" for="${id}"><span>${lab}</span><input id="${id}" type="${NUM.has(f) ? 'number' : 'text'}"></label>`;
+    };
+    let editId = null;
+    c.innerHTML = `<div class="form-grid">${fields.map(inp).join('')}</div><div class="row"><button class="btn primary" id="adm-save" type="button">Simpan</button><button class="btn" id="adm-new" type="button">Baru</button></div><p class="err" id="adm-err" role="alert" hidden></p>
+      <div>${rows.map(r => `<div class="glass don-row"><div><strong>${esc(r.name || r.title || r.question || r.label || r.donor_name || r.id)}</strong><small>${esc(fields.filter(f => NUM.has(f) || isEnum(f)).map(f => f + ': ' + r[f]).join(' · '))}</small></div><div class="row"><button class="btn small" data-e="${r.id}" type="button">Edit</button><button class="btn small" data-x="${r.id}" type="button">Hapus</button></div></div>`).join('') || '<p class="note">Belum ada data.</p>'}</div>`;
+    const fill = r => fields.forEach(f => { const e = $('#f-' + f); if (f === 'active') e.checked = r ? !!r[f] : true; else e.value = r ? r[f] ?? '' : (isEnum(f) ? ENUM[f][tbl][0] : ''); });
+    $('#adm-new').onclick = () => { editId = null; fill(null); };
+    $$('[data-e]', c).forEach(b => b.onclick = () => { editId = b.dataset.e; fill(rows.find(r => r.id === editId)); window.scrollTo({ top: c.offsetTop, behavior: 'smooth' }); });
+    $$('[data-x]', c).forEach(b => b.onclick = async () => { if (!confirm('Hapus data ini?')) return; const r = await sb.from(tbl).delete().eq('id', b.dataset.x); toast(r.error ? 'Gagal menghapus' : 'Dihapus'); aTable(c); });
+    $('#adm-save').onclick = async () => {
+      const p = {}; fields.forEach(f => { const e = $('#f-' + f); p[f] = f === 'active' ? e.checked : NUM.has(f) ? Number(e.value) || 0 : e.value.trim(); });
+      const r = editId ? await sb.from(tbl).update(p).eq('id', editId) : await sb.from(tbl).insert(p);
+      const er = $('#adm-err'); er.hidden = !r.error; if (r.error) { er.textContent = r.error.message; return; }
+      toast('Tersimpan'); aTable(c);
+    };
+  }
+
+  calcPsu(); loadParts(); loadProfile();
+})();
+
+</script>
+<script>
+/* =====================================================================
+   EFEK (low/medium/high/ultra) + INTRO
+   ===================================================================== */
+(() => {
+  'use strict';
+  const D = document.documentElement, $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const S = window.__Sound || { unlock() { }, intro() { }, whoosh() { }, land() { } };
+  const NOTE = {
+    low: 'Paling ringan: tanpa blur, tanpa animasi, tanpa intro. Cocok untuk HP lawas dan PC low.',
+    medium: 'Seimbang: blur ringan, animasi dikurangi, intro logo yang menyusut ke dock.',
+    high: 'Efek lengkap: kaca blur, orb bergerak, teks bercahaya, intro dengan glow.',
+    ultra: 'Semua efek penuh: kaca HD, bintang berkelip, partikel di intro, glow maksimal. Butuh perangkat kuat.'
+  };
+  const saved = () => { try { const v = JSON.parse(localStorage.getItem('arpi:fx')); return ['low', 'medium', 'high', 'ultra'].includes(v) ? v : null; } catch { return null; } };
+
+  /* ---- bintang berkelip (khusus ultra) ---- */
+  let starRun = false;
+  function stars(on) {
+    let cv = $('#fx-stars');
+    if (!on) { starRun = false; if (cv) cv.remove(); return; }
+    if (starRun) return; starRun = true;
+    cv = document.createElement('canvas'); cv.id = 'fx-stars'; document.body.prepend(cv);
+    const x = cv.getContext('2d'), dpr = Math.min(devicePixelRatio || 1, 1.5); let W, H;
+    const rs = () => { W = cv.width = innerWidth * dpr; H = cv.height = innerHeight * dpr; }; rs(); addEventListener('resize', rs);
+    const P = Array.from({ length: 70 }, () => ({ x: Math.random(), y: Math.random(), r: (.5 + Math.random() * 1.4) * dpr, s: .5 + Math.random() * 1.5, o: Math.random() * 6 }));
+    (function f(t) {
+      if (!starRun) return;
+      if (!document.hidden) { x.clearRect(0, 0, W, H); P.forEach(p => { x.globalAlpha = .25 + .55 * Math.abs(Math.sin(t / 1000 * p.s + p.o)); x.fillStyle = '#e6dcff'; x.beginPath(); x.arc(p.x * W, p.y * H, p.r, 0, 6.283); x.fill(); }); }
+      requestAnimationFrame(f);
+    })(0);
+  }
+
+  /* ---- pengaturan ---- */
+  function syncUI() {
+    const sv = saved(), cur = D.dataset.fx;
+    $$('#fx-chips .chip').forEach(b => { const on = b.dataset.l === (sv || 'auto'); b.classList.toggle('hot', on); b.setAttribute('aria-checked', on); });
+    $('#fx-note').textContent = (sv ? '' : `Auto memilih dari perangkatmu (sekarang: ${cur}). `) + NOTE[cur];
+  }
+  function applyFx(l) {
+    if (l === 'auto') localStorage.removeItem('arpi:fx'); else localStorage.setItem('arpi:fx', JSON.stringify(l));
+    const m = navigator.deviceMemory || 4, c = navigator.hardwareConcurrency || 4, n = navigator.connection;
+    D.dataset.fx = l !== 'auto' ? l : (matchMedia('(prefers-reduced-motion: reduce)').matches || (n && n.saveData) || m <= 2 || c <= 2) ? 'low' : (m <= 4 || c <= 4 || innerWidth < 760) ? 'medium' : 'high';
+    stars(D.dataset.fx === 'ultra'); syncUI();
+  }
+  $$('#fx-chips .chip').forEach(b => b.onclick = () => { applyFx(b.dataset.l); if (D.dataset.fx !== 'low') { S.unlock(); } });
+  $('#fx-intro').onclick = () => { if (D.dataset.fx === 'low') return syncUI(), alert('Intro dimatikan di level Low. Pilih Medium atau lebih tinggi.'); runIntro(); };
+
+  /* ---- intro ---- */
+  const I = $('#intro'), st = $('.istage', I), lg = $('#intro-logo'), cr = $('.intro-credit', I), hint = $('.intro-hint', I), bg = $('.ibg', I), gl = $('.iglow', I), cv = $('#intro-fx');
+  let busy = false, exiting = false, timer, stopP, t0 = 0;
+  function particles() {
+    const x = cv.getContext('2d'), dpr = Math.min(devicePixelRatio || 1, 2); let run = true;
+    const W = cv.width = innerWidth * dpr, H = cv.height = innerHeight * dpr;
+    const mk = p => { const a = Math.random() * 6.283, s = .3 + Math.random() * 1.5; Object.assign(p, { x: W / 2, y: H / 2, vx: Math.cos(a) * s * dpr, vy: Math.sin(a) * s * dpr, l: 0, life: 120 + Math.random() * 180 }); return p; };
+    const P = Array.from({ length: 110 }, () => Object.assign(mk({}), { r: (.6 + Math.random() * 1.8) * dpr, h: 250 + Math.random() * 90, l: Math.random() * 100 }));
+    (function f() {
+      if (!run) return; x.clearRect(0, 0, W, H); x.globalCompositeOperation = 'lighter';
+      P.forEach(p => { p.x += p.vx; p.y += p.vy; p.vx *= .995; p.vy *= .995; if (++p.l > p.life) mk(p); const k = 1 - p.l / p.life; x.fillStyle = `hsla(${p.h},90%,70%,${k * .8})`; x.beginPath(); x.arc(p.x, p.y, p.r * (1 + k), 0, 6.283); x.fill(); });
+      requestAnimationFrame(f);
+    })();
+    return () => { run = false; x.clearRect(0, 0, W, H); };
+  }
+  function finish() {
+    D.dataset.intro = ''; delete D.dataset.intro; busy = false; I.style.pointerEvents = '';
+    try { sessionStorage.setItem('yh:intro', '1'); } catch { }
+    const b = $('.brand img'); if (b) { b.classList.remove('land'); void b.offsetWidth; b.classList.add('land'); }
+  }
+  function exit() {
+    if (!busy || exiting) return; exiting = true; clearTimeout(timer); I.style.pointerEvents = 'none';
+    const ultra = D.dataset.fx === 'ultra', T = ultra ? 1100 : 900;
+    st.style.transition = 'none'; st.style.transform = 'none';
+    const r = st.getBoundingClientRect(); let t = $('.brand img'); t = t && t.getBoundingClientRect();
+    if (!t || !t.width) { const h = $('.nav-btn[data-tab="home"] .ic'); t = h && h.getBoundingClientRect(); }
+    if (!t || !t.width) t = { left: innerWidth / 2 - 20, top: innerHeight - 60, width: 40, height: 40 };
+    const sx = t.width / r.width, dx = t.left + t.width / 2 - (r.left + r.width / 2), dy = t.top + t.height / 2 - (r.top + r.height / 2);
+    S.whoosh();
+    st.animate([{ transform: 'translate(0,0) scale(1)' }, { transform: `translate(${dx}px,${dy}px) scale(${sx})` }], { duration: T, easing: 'cubic-bezier(.65,0,.2,1)', fill: 'forwards' });
+    lg.animate([{ borderRadius: '14%' }, { borderRadius: '50%' }], { duration: T, easing: 'ease-in-out', fill: 'forwards' });
+    [gl, hint].forEach(e => e.animate([{ opacity: getComputedStyle(e).opacity }, { opacity: 0 }], { duration: 400, fill: 'forwards' }));
+    cr.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(14px)' }], { duration: 420, fill: 'forwards' });
+    bg.animate([{ opacity: 1 }, { opacity: 0 }], { duration: T * .85, delay: T * .15, easing: 'ease-in', fill: 'forwards' });
+    if (stopP) setTimeout(stopP, 700);
+    setTimeout(() => { S.land(); st.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'forwards' }).onfinish = finish; }, T);
+  }
+  function runIntro() {
+    if (busy || D.dataset.fx === 'low') return;
+    busy = true; exiting = false; D.dataset.intro = '1'; t0 = performance.now(); I.style.pointerEvents = '';
+    [st, lg, cr, hint, bg, gl].forEach(e => e.getAnimations().forEach(a => a.cancel()));
+    st.style.transition = ''; st.style.transform = '';
+    const ultra = D.dataset.fx === 'ultra', ease = 'cubic-bezier(.2,.7,.2,1)';
+    lg.animate([{ opacity: 0, transform: 'scale(.55)', filter: 'blur(14px) brightness(1.8)' }, { opacity: 1, transform: 'scale(1)', filter: 'blur(0) brightness(1)' }], { duration: ultra ? 1500 : 1100, easing: ease, fill: 'forwards' });
+    cr.animate([{ opacity: 0, transform: 'translateY(10px)', letterSpacing: '.32em' }, { opacity: 1, transform: 'none', letterSpacing: '.16em' }], { duration: 900, delay: 700, easing: ease, fill: 'forwards' });
+    hint.animate([{ opacity: 0 }, { opacity: .8 }], { duration: 700, delay: 1500, fill: 'forwards' });
+    stopP = ultra ? particles() : null;
+    S.intro();
+    timer = setTimeout(exit, ultra ? 5200 : 4200);
+  }
+  I.addEventListener('pointermove', e => {
+    if (exiting) return; const x = e.clientX / innerWidth - .5, y = e.clientY / innerHeight - .5;
+    st.style.transform = `rotateY(${x * 18}deg) rotateX(${-y * 18}deg)`; gl.style.transform = `translate(${x * 40}px,${y * 40}px)`;
+  });
+  I.addEventListener('pointerdown', () => { S.unlock(); if (performance.now() - t0 > 500) exit(); });
+  addEventListener('keydown', e => { if (busy && ['Enter', ' ', 'Escape'].includes(e.key)) { e.preventDefault(); S.unlock(); exit(); } });
+  lg.addEventListener('error', () => { clearTimeout(timer); if (stopP) stopP(); finish(); });
+
+  stars(D.dataset.fx === 'ultra'); syncUI();
+  if (D.dataset.intro === '1') { const go = () => runIntro(); (lg.decode ? lg.decode().catch(() => { }) : Promise.resolve()).then(go); }
+})();
+</script>
 </body>
 </html>
